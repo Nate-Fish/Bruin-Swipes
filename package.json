@@ -1,0 +1,28 @@
+{
+  "name": "bruin-swipes",
+  "version": "1.0.0",
+  "description": "An app that facilitates a market for UCLA's meal swipes!",
+  "main": "main.js",
+  "scripts": {
+    "test": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nate-Fish/Bruin-Swipes.git"
+  },
+  "keywords": [
+    "UCLA",
+    "35L",
+    "Meal",
+    "Swipes"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nate-Fish/Bruin-Swipes/issues"
+  },
+  "homepage": "https://github.com/Nate-Fish/Bruin-Swipes#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
