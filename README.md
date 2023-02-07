@@ -20,5 +20,22 @@ Simply run the following commands while located in the root folder of the projec
 
 ```
 npm install
-node main.js
+node index.js
+```
+
+Make sure to rename the downloaded .env-git file to .env and insert all necessary secrets into the file.
+###  IMPORTANT
+Make sure that you set up a database at MongoDB, initialize a user and a password, and insert the corresponding connection uri into the mongodb library file. Finally, make sure that the database allows access
+from the configured server's IP address.
+
+
+## For Developers 
+Setup your standard express app with
+```
+npm init
+npm install express
+```
+Then setup your react-client app with the following:
+```
+npm init react-app client
 ```
