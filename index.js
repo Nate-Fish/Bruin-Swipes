@@ -51,20 +51,7 @@ process.on('SIGINT', () => {
 // END SERVER CODE, BEGIN ROUTES
 // -------------------------------------------------------------------
 
-// TODO: REMOVE THIS LINE AND REPLACE IT WITH A CLASS IMPLEMENTATION OF ROUTES AND ACCOUNTS
 
-let routes = require("./routes.js");
-
-// ACCOUNT BASICS, AGAIN, MOVE THIS ELSEWHERE / IMPLEMENT DIFFERENTLY
-// Sign up for an account
-app.post('/sign-up', (req, res) => routes.sign_up(req, res));
-
-// Login to an account
-app.post('/login', (req, res) => routes.login(req, res));
-
-// Logout of the account
-app.get('/logout', (req, res) => routes.logout(req, res));
-
-// On every page load, verify if the user is signed in and if so, who they are signed is as.
-app.get('/verify-session', (req, res) => routes.verify_session(req, res));
+let route_handler = require('./route-handler.js');
+route_handler(app);
 

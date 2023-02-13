@@ -1,14 +1,3 @@
-/**
- * THIS FILE HAS NOT BEEN IMPLEMENTED AS NEEDED YET.
- * 
- * THIS IS JUST A TEMPLATE UNTIL FUTURE NOTICE.
- * 
- * 
- * WE LOOK TO MAKE A CLASS TO HANDLE ROUTING / UTILIZE EXPRESS ROUTERS TO MAKE THIS PROCESS NICER
- */
-
-
-
 // First import the mongo library
 // Assume that the client has already been connected and that disconnect is handled by caller
 const mongo = require('./mongodb-library.js');
@@ -140,7 +129,7 @@ async function sign_up(username, password, email) {
 
         //Generate a password hash
         let hashSalt = genPassword(password);
-        //Data to send to MongoDB database
+        // Data to send to MongoDB database
         let saveMe = {
             time: (new Date()).getTime(),
             username: username,
@@ -189,7 +178,7 @@ async function issue_session(user_id) {
         let matching_sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
         if (matching_sessions.length != 0) { //Just refresh the session if the user already has one
             await mongo.update_docs({"user_id": user_id}, {$set: {issue_time: (new Date()).getTime()}}, "Accounts", "sessions");
-        } else { //Issue a new session
+        } else { // Issue a new session
             let hashSalt = genPassword(user_id);
             let new_doc = {
                 "user_id": user_id,
@@ -199,7 +188,7 @@ async function issue_session(user_id) {
             }
             await mongo.add_data(new_doc, "Accounts", "sessions");
         }
-        //Send back the the user's session (by re-verifying that it actually showed up in the database)
+        // Send back the the user's session (by re-verifying that it actually showed up in the database)
         let sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
         return sessions[0];
     } catch (error) {}
@@ -235,18 +224,18 @@ async function verify_session(hash) {
             let issue_time = my_session["issue_time"];
             if (((new Date()).getTime() - issue_time) / 1000 / 60 / 60 / 24 > 1) { // Calculate issue_time, can't be greater than a day
                 info = "EXPIRED";              
-            } else if (validPassword(my_session["user_id"], hash, my_session["salt"])) { //Check decryption
+            } else if (validPassword(my_session["user_id"], hash, my_session["salt"])) { // Check decryption
                 user_id = my_session["user_id"];
                 info = "VALID";
                 valid = true;
             }
-        } catch (error) {} // console.log("ERROR OCCURRED IN SESSION VERIFICATION " + error.message);
+        } catch (error) {}
         return {
             info: info,
             valid: valid,
             user_id: user_id
         };
-    } catch(error) {} // console.log("ERROR OCCURRED IN SESSION VERIFICATION " + error.message);
+    } catch(error) {}
     return {
         valid: false
     };
@@ -275,7 +264,7 @@ async function login(username, password) {
 
     if (accounts.length == 0) { //An account with that username doesn't exist
         message = "ACCOUNT DOES NOT EXIST";
-    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { //If password isn't right
+    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { //Password incorrect
         message = "INCORRECT PASSWORD";
     } else { //Account is good
         user_id = accounts[0]["_id"].toString();
