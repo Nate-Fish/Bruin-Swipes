@@ -3,11 +3,13 @@
  * for a given express app.
  */
 
-let account_routes = require('./account_routes.js');
+let account_routes = require('./account-routes.js');
 
 function routeHandler (app) { // Default export (bottom of file)
     setup_get_routes(app);
     setup_post_routes(app);
+
+    console.log("Routes have been setup!");
 }
 
 function setup_get_routes (app) {

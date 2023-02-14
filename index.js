@@ -10,11 +10,10 @@
 console.log("Welcome to BruinSwipes! Setting up the server... (Close the server at anytime with C-c)")
 
 // Default imports
-const path = require('path');
 const cookieParser = require('cookie-parser');
 
 // Attempt to import express
-let express;
+let express = require('express');
 try {
     express = require('express');
 } catch (err) {
@@ -36,9 +35,10 @@ app.use(express.json()); // Allow JSON GET/POST requests
 // Listen on default port or 3000 by default
 let server = app.listen(process.env.PORT || 3000, () => {
     console.log("Starting to listen at http://localhost:" + server.address().port);
+
+    mongo.connectClient(); // Connect here, so that atleast the serving of pages is ready
 });
 
-mongo.connectClient(); // Connect here, so that atleast the serving of pages is ready
 
 //On server/process closing, perform cleanup functions
 process.on('SIGINT', () => {
@@ -48,10 +48,18 @@ process.on('SIGINT', () => {
 });
 
 // -------------------------------------------------------------------
-// END SERVER CODE, BEGIN ROUTES
+// END SERVER CODE, BEGIN ROUTES & EMAIL SERVICE
 // -------------------------------------------------------------------
-
 
 let route_handler = require('./route-handler.js');
 route_handler(app);
+
+// We do all "email handling" where it is necessary to do so
+let emailHandler = require('./email-service.js');
+
+
+
+// -------------------------------------------------------------------
+// END ROUTES & EMAIL SERVICE CODE
+// -------------------------------------------------------------------
 
