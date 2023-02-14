@@ -1,0 +1,7 @@
+# Ignore the following directories/files if not added to commit explicitly
+node_modules
+
+# Secrets
+.env
+credentials.json
+token.json
