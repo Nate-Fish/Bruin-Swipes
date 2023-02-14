@@ -51,4 +51,4 @@ your secrets in a .env file (e.g. MONGOPASSWORD=???).
 
 Next, make sure to download the necessary credentials.json file to your root folder containing the OAuth2.0 credentials for the Google API to work (alternatively, comment out the emailHandler imports in the main file if you aren't working with the email service yet.)
 
-To view all the credentials necessary to see both the Gmail and MongoDB data, see the secrets google doc here: (only shared to developers of this project) <a>Secrets</a>.
+To view all the credentials necessary to see both the Gmail and MongoDB data, see the secrets google doc here: (only shared to developers of this project) <a href="https://docs.google.com/document/d/16fc05cGhRv3WcJdg3zonL68o0x3y5Ft5HMRoO8w7T0A/edit?usp=sharing">Secrets</a>.
