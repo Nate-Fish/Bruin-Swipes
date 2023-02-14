@@ -29,7 +29,7 @@ try {
 
 
 // Build a uri, user and password settings are configured on the website
-let uri = "mongodb+srv://bruinswipes:" + process.env.MONGOPASSWORD + "@bruinswipes.nvar92x.mongodb.net/?retryWrites=true&w=majority"; //Set this to your mongo uri
+let uri = "mongodb+srv://bruinswipes:" + process.env.MONGOPASSWORD + "@bruinswipes.oe9xqoa.mongodb.net/?retryWrites=true&w=majority"; //Set this to your mongo uri
 // Configure client, pass in uri and options
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: false });
 

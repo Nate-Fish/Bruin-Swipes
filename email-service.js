@@ -83,6 +83,7 @@ class emailHandler {
 
     async initialize() {
         await this.authorize();
+        console.log("Email service initialized!");
         
         // this.send_email(`pirjot@g.ucla.edu`, `Hey`, `<p><b>This is BruinBot!</b></p>`);
     }
@@ -174,7 +175,6 @@ Content-Type: text/html; charset="UTF-8"
                 "id": draftID
             }
         });
-        console.log(res);
     }
 }
 
