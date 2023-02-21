@@ -51,34 +51,62 @@ function drawNav() {
 
 /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
 function openNav() {
-    document.getElementById("mySidebar").style.width = "250px";
-    document.getElementById("topMenu").style.marginLeft = "250px";
+    getElem("mySidebar").style.width = "250px";
+    getElem("topMenu").style.marginLeft = "250px";
 }
 
 /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
 function closeNav() {
-    document.getElementById("mySidebar").style.width = "0";
-    document.getElementById("topMenu").style.marginLeft = "0";
+    getElem("mySidebar").style.width = "0";
+    getElem("topMenu").style.marginLeft = "0";
 }
 
 
 // -----------------------------------------------
 // ACCOUNT AUTHENTICATION
 // -----------------------------------------------
-// Initialize Accounts here
 /**
- * TODO
+ * Every object in the signInQueue is a function that accepts
+ * the signedIn object as its parameter.
+ * 
+ * 
+ */
+let signInQueue = [];
+
+
+/**
+ * Initialize the Account Listeners. All information here
+ * is relevant on the signed in status. We provide
+ * a global "signInQueue" for functions that need to check
+ * sign and status.
+ * The object is of the following form:
+ * {
+ *      isSignedIn: {Boolean},
+ *      name: {String}
+ * }
  */
 async function initAccountListeners() {
     // Attempt to sign with verify
     let signedIn = await checkSignedIn();
-    console.log(signedIn);
+
+    for (func of signInQueue) {
+        func(signedIn);
+    }
+
+    if (hideNav) {
+        return;
+    }
 
     // The sign up/in button area (div)
-    let area = document.getElementById('signArea');
+    let area = getElem('signArea');
 
     if (signedIn.isSignedIn) {
-        area.innerHTML = `<a style="border: 1px solid blue;
+        area.innerHTML = `<button style="
+        margin-right: 20px;
+        cursor: pointer;
+        " onclick="logout()">Logout</button>
+        
+        <a style="border: 1px solid blue;
         background-color: beige;
         border-radius: 40px;
         color: black;
@@ -88,8 +116,11 @@ async function initAccountListeners() {
         cursor: pointer;
         text-decoration: none;
         " href="profile.html">
-        <i class="fa fa-address-card"></i>  Welcome ` + signedIn.username +`!
+        <i class="fa fa-address-card"></i>  Welcome ` + signedIn.name +`!
         </a>`;
+
+        
+
     } else {
         // TODO - Move this to CSS
         area.innerHTML = `
@@ -177,6 +208,22 @@ async function makeRequest(route, body=null) {
     return res;
 }
 
+/**
+ * Make a request to logout and refresh the page.
+ */
+async function logout() {
+    await makeRequest('/logout');
+    location.reload();
+}
+/**
+ * Aliases for document related functions.
+ */
+/**
+ * Alias for document.getElementById.
+ */
+function getElem(id) {
+    return document.getElementById(id);
+}
 
 
 // Document listener for inserting all functions after initialize

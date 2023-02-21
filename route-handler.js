@@ -21,6 +21,9 @@ function setup_get_routes (app) {
     // On every page load, verify if the user is signed in and if so, who they are signed is as.
     app.get('/verify-session', (req, res) => account_routes.verify_session(req, res));
 
+    // Certify an account (verify their email)
+    app.get('/certify', (req, res) => account_routes.certify(req, res));
+
     // END ACCOUNT GET ROUTES
 }
 

@@ -51,11 +51,11 @@ process.on('SIGINT', () => {
 // END SERVER CODE, BEGIN ROUTES & EMAIL SERVICE
 // -------------------------------------------------------------------
 
+// We do all "email handling" where it is necessary to do so
+let {emailHandler} = require('./email-service.js');
+
 let route_handler = require('./route-handler.js');
 route_handler(app);
-
-// We do all "email handling" where it is necessary to do so
-let emailHandler = require('./email-service.js');
 
 
 
