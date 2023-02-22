@@ -74,9 +74,9 @@ body {
     transition: margin-left .5s;
     /* If you want a transition effect */
     padding: 2px;
-    display: flex; 
-    flex-flow: row nowrap; 
-    justify-content: space-between; 
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
     background-color: gray
 }
 
