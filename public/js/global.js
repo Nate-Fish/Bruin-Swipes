@@ -106,15 +106,16 @@ async function initAccountListeners() {
         cursor: pointer;
         " onclick="logout()">Logout</button>
         
-        <a style="border: 1px solid blue;
-        background-color: beige;
-        border-radius: 40px;
+        <a style="border: 2px solid white;
+        background-color: #2774AE;
+        border-radius: 15px;
         color: black;
-        padding: .3rem .8rem;
+        padding: 0.3rem 0.8rem;
         transition: background-color 0.25s;
         outline: none;
         cursor: pointer;
         text-decoration: none;
+        font-size: 18px;
         " href="profile.html">
         <i class="fa fa-address-card"></i>  Welcome ` + signedIn.name +`!
         </a>`;
@@ -124,15 +125,21 @@ async function initAccountListeners() {
     } else {
         // TODO - Move this to CSS
         area.innerHTML = `
-        <a href="sign.html" style="border: 1px solid blue;
-        background-color: beige;
-        border-radius: 40px;
+        <a href="sign.html" 
+        onmouseover = "this.style.backgroundColor = 'white';"
+        onmouseout = "this.style.backgroundColor = '#2774AE';"
+        
+        
+        style="border: 2px solid white;
+        background-color: #2774AE;
+        border-radius: 15px;
         color: black;
-        padding: .3rem .8rem;
+        padding: 0.3rem 0.8rem;
         transition: background-color 0.25s;
         outline: none;
         cursor: pointer;
-        text-decoration: none;"
+        text-decoration: none;
+        font-size: 18px;"
         >Sign Up / Login</a>
         `;
     }

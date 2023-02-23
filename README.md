@@ -54,3 +54,16 @@ your secrets in a .env file (e.g. MONGOPASSWORD=???).
 Next, make sure to download the necessary credentials.json file to your root folder containing the OAuth2.0 credentials for the Google API to work (alternatively, comment out the emailHandler imports in the main file if you aren't working with the email service yet.)
 
 To view all the credentials necessary to see both the Gmail and MongoDB data, see the secrets google doc here: (only shared to developers of this project) <a href="https://docs.google.com/document/d/16fc05cGhRv3WcJdg3zonL68o0x3y5Ft5HMRoO8w7T0A/edit?usp=sharing">Secrets</a>.
+
+### How to Communicate with the Backend
+We communicate with the backend using fetch requests through local routes. You can view all routes available in route-handler.js.
+
+For your use, you can use the helper function makeRequest (available in /public/js/global.js, expected to be imported in every HTML page) to make writing your requests easier. Make sure to *await* any fetch requests you make yourself and any call to an async function.
+
+For any process that involves communication between the server and client do the following:
+
+1. Write the function(s) in the backend that communicates with the database or server variables, organized by their specific module (e.g. accounts.js)
+2. If desired, make a separate module to parse incoming requests (GET and POST fetch requests are passed to the server as a request and response object pair) and then utilize your lower level functions that you declared in Step 1. (e.g. account-routes.js)
+3. Declare your function in its respective area (GET or POST) in route-handler.js.
+4. Test your request on the frontend (perhaps in a React Object).
+

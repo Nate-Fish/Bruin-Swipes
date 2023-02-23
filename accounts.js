@@ -261,6 +261,8 @@ async function login(email, password) {
         message = "ACCOUNT DOES NOT EXIST";
     } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { // Password incorrect
         message = "INCORRECT PASSWORD";
+    } else if (!accounts[0]["certified"]) {
+        message = "UNCERTIFIED ACCOUNT. CHECK YOUR EMAIL."
     } else { // Account is good
         user_id = accounts[0]["_id"].toString();
         message = "LOGIN SUCCESSFUL";
