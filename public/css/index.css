@@ -1,0 +1,102 @@
+h1 {
+  text-align: center;
+  background-color: #2774AE;
+  height: auto;
+  padding: 0px 0px 6px;
+  font-size: 500%;
+  margin: 0px;
+}
+
+.logo-background {
+  text-align: center;
+  background-color: #DBEDFB;
+  border-top: 1px solid #17244c;
+  padding: 0px 0px 6px;
+}
+
+.logo {
+  width: 400px;
+  height: 350px;
+  animation: fadeInAnimation ease 6s;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
+body {
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
+  color: #FFFFFF;
+  background-color: #DBEDFB;
+}
+
+.main {
+  margin: 0px 15% 0px 15%;
+  padding: 50px 0px 0px 0px;
+  border-radius: 15px;
+  text-align: center;
+  background-color: #2774AE;
+  border-top: 1px solid #17244c;
+}
+
+.welcome {
+  font-size: 200%;
+  border-radius: 15px;
+}
+
+.intro {
+  padding: 2% 20%;
+  font-size: 150%;
+}
+
+table {
+  padding: 0% 20%;
+}
+
+td {
+  font-size: 150%;
+}
+
+td, img {
+  width: 30%;
+  height: 10%;
+}
+
+footer {
+  background-color: #2c5e91;
+  text-align: center;
+  width: 100%;
+  border-top: 1px solid #17244c;
+  padding: 0px 0px 6px;
+}
+
+.login {
+  text-align: center;
+  background-color: #2774AE;
+  padding: 40px 0px 50px 0px;
+  font-size: 150%;
+}
+
+.login-button {
+  border-style: solid;
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  border-width: 2px;
+  background-color: #2774AE;
+  font-size: 100%;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.login-button:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeInAnimation {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

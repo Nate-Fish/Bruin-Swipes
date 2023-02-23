@@ -65,7 +65,7 @@ async function initAccountListeners() {
         let password = prompt("PASSWORD");
         let email = prompt("EMAIL");
 
-        let response = await makeRequest('/sign-up', {username, password, email});
+        let response = await makeRequest('/sign-up', { username, password, email });
         alert(response);
         console.log(response);
 
@@ -135,7 +135,7 @@ function quickCreate(tagName, tags = null, text = null) {
  * @param {JSON} body 
  * @returns {JSON} Some JSON object or array.
  */
-async function makeRequest(route, body=null) {
+async function makeRequest(route, body = null) {
     let options = {
         method: 'GET',
         headers: {
@@ -153,7 +153,7 @@ async function makeRequest(route, body=null) {
 
 // TEMPORARY GLOBAL SIGNED IN FUNCTION
 async function checkSignedIn() {
-    let response = await makeRequest('/verify-session'); 
+    let response = await makeRequest('/verify-session');
     return response;//{isSignedIn: false, username: null, data: null};
 }
 
