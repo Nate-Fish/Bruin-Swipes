@@ -2,16 +2,24 @@
  * This script is expected to be imported on every HTML page.
  * 
  * It does the following:
- * 1. Import other default scripts/libraries/css files
+ * 1. Import other default scripts/libraries/css files (You don't need to import default.css)
  * 2. Initialize account sign in status
- * 3. Initialize the menu setup, available on every page (can be disabled with a separate script tag)
+ * 3. Initialize the menu setup, available on every page (TODO: can be disabled with a separate script tag)
  * 4. Make available global helper functions
  */
+
+// Import variables from the script data attributes
+// True if we want to hide the navigation, false otherwise
+let hideNav = Boolean(document.currentScript.getAttribute("data-hideNav"));
 
 // Import Default Scripts/CSS files here
 document.head.append(quickCreate("link", {
     "rel": "stylesheet",
     "href": "css/default.css",
+}));
+document.head.append(quickCreate("link", {
+    "rel": "stylesheet",
+    "href": "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css",
 }));
 
 // Initialize Menu Setup
@@ -23,69 +31,126 @@ document.head.append(quickCreate("link", {
 function drawNav() {
     // TODO: Write these HTML elements into their own files and import from the files
 
-    document.body.innerHTML = '<div id="mySidebar" class="sidebar">' +
-        '<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>' +
-        '<a href="#">About</a>' +
-        '<a href="#">Services</a>' +
-        '<a href="#">Clients</a>' +
-        '<a href="#">Contact</a>' +
-        '</div>' +
+    document.body.innerHTML = `<div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick='closeNav()'>&times;</a>
+        <a href="#">About</a>
+        <a href="#">Services</a>
+        <a href="#">Clients</a>
+        <a href="#">Contact</a>
+        </div>` +
         document.body.innerHTML;
 
-    document.body.innerHTML = '<div id="topMenu">' +
-        '<button class="openbtn" onclick="openNav()">&#9776; Open Sidebar</button>' +
-        '<h2>Collapsed Sidebar</h2>' +
-        '<button id="sign_up_button">SIGNUP</button>' +
-        '<button id="sign_in_button">SIGNIN</button>' +
-        '<p class="account_name">LOGIN INFO HERE</p>' +
-        '</div>' +
+    // signArea below is attached to the script in initAccountListeners
+    document.body.innerHTML = `<div id="topMenu">
+        <button class="openbtn" onclick="openNav()">&#9776;</button>
+        <h2>BruinSwipes</h2>
+        <div style="margin: auto 0 auto 0;" id="signArea"></div>
+        </div>` +
         document.body.innerHTML;
 }
 
 /* Set the width of the sidebar to 250px and the left margin of the page content to 250px */
 function openNav() {
-    document.getElementById("mySidebar").style.width = "250px";
-    document.getElementById("topMenu").style.marginLeft = "250px";
+    getElem("mySidebar").style.width = "250px";
+    getElem("topMenu").style.marginLeft = "250px";
 }
 
 /* Set the width of the sidebar to 0 and the left margin of the page content to 0 */
 function closeNav() {
-    document.getElementById("mySidebar").style.width = "0";
-    document.getElementById("topMenu").style.marginLeft = "0";
+    getElem("mySidebar").style.width = "0";
+    getElem("topMenu").style.marginLeft = "0";
 }
 
 
-// Initialize Accounts here
+// -----------------------------------------------
+// ACCOUNT AUTHENTICATION
+// -----------------------------------------------
 /**
- * TODO
+ * Every object in the signInQueue is a function that accepts
+ * the signedIn object as its parameter.
+ * 
+ * 
+ */
+let signInQueue = [];
+
+
+/**
+ * Initialize the Account Listeners. All information here
+ * is relevant on the signed in status. We provide
+ * a global "signInQueue" for functions that need to check
+ * sign and status.
+ * The object is of the following form:
+ * {
+ *      isSignedIn: {Boolean},
+ *      name: {String}
+ * }
  */
 async function initAccountListeners() {
-    document.getElementById("sign_up_button").addEventListener("click", async (evt) => {
-        let username = prompt("USERNAME");
-        let password = prompt("PASSWORD");
-        let email = prompt("EMAIL");
-
-        let response = await makeRequest('/sign-up', { username, password, email });
-        alert(response);
-        console.log(response);
-
-    });
-    document.getElementById("sign_in_button").addEventListener("click", async (evt) => {
-        alert("THIS BUTTON DONT DO NOTHING YET")
-    });
-
     // Attempt to sign with verify
     let signedIn = await checkSignedIn();
-    console.log(signedIn);
 
-    // Set all account spans to the account name
-    for (let elem of document.getElementsByClassName("account_name")) {
-        elem.textContent = "ACCOUNT SIGNED IN: " + signedIn.username;
+    for (func of signInQueue) {
+        func(signedIn);
+    }
+
+    if (hideNav) {
+        return;
+    }
+
+    // The sign up/in button area (div)
+    let area = getElem('signArea');
+
+    if (signedIn.isSignedIn) {
+        area.innerHTML = `<button style="
+        margin-right: 20px;
+        cursor: pointer;
+        " onclick="logout()">Logout</button>
+        
+        <a style="border: 2px solid white;
+        background-color: #2774AE;
+        border-radius: 15px;
+        color: black;
+        padding: 0.3rem 0.8rem;
+        transition: background-color 0.25s;
+        outline: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 18px;
+        " href="profile.html">
+        <i class="fa fa-address-card"></i>  Welcome ` + signedIn.name +`!
+        </a>`;
+
+        
+
+    } else {
+        // TODO - Move this to CSS
+        area.innerHTML = `
+        <a href="sign.html" 
+        onmouseover = "this.style.backgroundColor = 'white';"
+        onmouseout = "this.style.backgroundColor = '#2774AE';"
+        
+        
+        style="border: 2px solid white;
+        background-color: #2774AE;
+        border-radius: 15px;
+        color: black;
+        padding: 0.3rem 0.8rem;
+        transition: background-color 0.25s;
+        outline: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 18px;"
+        >Sign Up / Login</a>
+        `;
     }
 }
 
 
-
+// TEMPORARY GLOBAL SIGNED IN FUNCTION
+async function checkSignedIn() {
+    let response = await makeRequest('/verify-session'); 
+    return response;//{isSignedIn: false, username: null, data: null};
+}
 
 
 
@@ -150,18 +215,27 @@ async function makeRequest(route, body = null) {
     return res;
 }
 
-
-// TEMPORARY GLOBAL SIGNED IN FUNCTION
-async function checkSignedIn() {
-    let response = await makeRequest('/verify-session');
-    return response;//{isSignedIn: false, username: null, data: null};
+/**
+ * Make a request to logout and refresh the page.
+ */
+async function logout() {
+    await makeRequest('/logout');
+    location.reload();
 }
-
+/**
+ * Aliases for document related functions.
+ */
+/**
+ * Alias for document.getElementById.
+ */
+function getElem(id) {
+    return document.getElementById(id);
+}
 
 
 // Document listener for inserting all functions after initialize
 document.addEventListener("DOMContentLoaded", (evt) => {
-    drawNav();
+    !hideNav && drawNav();    
 
     initAccountListeners();
 });

@@ -69,9 +69,9 @@ async function saveCredentials(client) {
     await fs.writeFile(TOKEN_PATH, payload);
 }
 
-class emailHandler {
+class emailService {
     /**
-     * Ready the emailHandler by authorizing/loading the credentials
+     * Ready the emailService by authorizing/loading the credentials
      */
     constructor() {
         console.log("Initializing email client...")
@@ -176,10 +176,27 @@ Content-Type: text/html; charset="UTF-8"
             }
         });
     }
+
+    /**
+     * Send a certification email with a link to where the user can get
+     * their email certified...
+     * @param {String} address The address of the server (get this using req.protocol and req.get('host'))
+     * @param {*} name 
+     * @param {*} email 
+     * @param {*} user_id 
+     */
+    async certify_email(address, name, email, user_id) {
+        // TODO: Change recipients to actual email parameter above (for now, route emails to where you want)
+        this.send_email("bruinswipesbot@gmail.com", "Verify your BruinSwipes Account", `
+<p>Hi ` + name + `,</p>
+    
+<p>Welcome to BruinSwipes! After verifying your account, you can login normally from the website. Verify your account with the link below:</p>
+<a href="` + address + `/certify?user_id=` + user_id + `&email=` + email + `">Verify your account</a>
+        
+<p>Go Bruins!</p>
+`);
+    }
+
 }
 
-// Have only a single handler, authenticated once
-if (!module.exports.handler) {
-    module.exports.handler = new emailHandler();
-}
-module.exports = {handler:null};
+module.exports = {emailHandler:new emailService()};
