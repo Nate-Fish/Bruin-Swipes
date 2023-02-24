@@ -200,7 +200,7 @@ function quickCreate(tagName, tags = null, text = null) {
  * @param {JSON} body 
  * @returns {JSON} Some JSON object or array.
  */
-async function makeRequest(route, body=null) {
+async function makeRequest(route, body = null) {
     let options = {
         method: 'GET',
         headers: {
