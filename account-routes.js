@@ -150,7 +150,7 @@ async function verify_session(req, res) {
     let verify_response = await accounts.verify_session(req.cookies["session"]);
     if (verify_response["valid"]) {
         response.isSignedIn = true;
-        response.name = await accounts.get_account_name(verify_response["user_id"]);
+        response.name = await accounts.get_account_attribute(verify_response["user_id"], "first");
     }
     res.send(response);
 }

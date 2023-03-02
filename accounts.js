@@ -276,20 +276,23 @@ async function login(email, password) {
 }
 
 /**
- * Get a person's first name using their user_id.
- * 
- * @param {String} user_id
- * @returns {String} the person's first name (or null if not found)
+ * Retrieve any given attribute using a person's user_id or email
+ * from the Accounts database.
+ * @param {String} user_id_email
+ * @param {String} attribute first, email, etc.
+ * @param {Boolean} emailforID False if User ID provided, True if email
+ * @return the value for the given attribute otherwise null
  */
-async function get_account_name(user_id) {
-    let name = null;
+async function get_account_attribute(user_id_email, attribute, emailforID=false) {
+    let value = null;
     try {
-        let matching_accounts = await mongo.get_data({"_id": new ObjectId(user_id)}, "Accounts", "accounts");
-        let my_account = matching_accounts[0];
-        name = my_account["first"];
-    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING NAME: " + error.message)}
-    return name;
+        let filter = emailforID ? {"email": user_id_email} : {"_id": new ObjectId(user_id_email)};
+        let accs = await mongo.get_data(filter, "Accounts", "accounts");
+        value = accs[0][attribute];
+    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING ATTRIBUTE: " + error.message)}
+    return value;
 }
+
 
 /**
  * Certify a user by checking if there is indeed an account with matching
@@ -335,5 +338,5 @@ async function certify (user_id, email) {
 }
 
 module.exports = {
-    sign_up, login, get_account_name, issue_session, verify_session, certify
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify
 }
