@@ -279,18 +279,26 @@ async function login(email, password) {
  * Retrieve any given attribute using a person's user_id or email
  * from the Accounts database.
  * @param {String} user_id_email
- * @param {String} attribute first, email, etc.
+ * @param {String|Array} attribute first, email, or multiple in a list
  * @param {Boolean} emailforID False if User ID provided, True if email
- * @return the value for the given attribute otherwise null
+ * @return the value for the given attribute (a JSON for attribute:value if list provided) otherwise null
  */
 async function get_account_attribute(user_id_email, attribute, emailforID=false) {
     let value = null;
     try {
         let filter = emailforID ? {"email": user_id_email} : {"_id": new ObjectId(user_id_email)};
-        let accs = await mongo.get_data(filter, "Accounts", "accounts");
-        value = accs[0][attribute];
+        let acc = (await mongo.get_data(filter, "Accounts", "accounts"))[0];
+        // Check if attribute is an array
+        if (Array.isArray(attribute)) {
+            value = {};
+            for (key of attribute) {
+                value[key] = acc[key];
+            }
+        } else {
+            value = acc[attribute];
+        }
     } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING ATTRIBUTE: " + error.message)}
-    return value;
+    return value || null;
 }
 
 

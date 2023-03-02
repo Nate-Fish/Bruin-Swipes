@@ -134,13 +134,14 @@ async function logout (req, res) {
  * @param {JSON} res An object of the form:
  * {
  *      isSignedIn: {Boolean},
- *      first: {String},
+ *      name: {String},
  * }
  */
 async function verify_session(req, res) {
     let response = {
         isSignedIn: false,
         name: null,
+        email: null
     };
     if (req.cookies == undefined || req.cookies["session"] == undefined) {
         res.send(response);
@@ -149,8 +150,9 @@ async function verify_session(req, res) {
     
     let verify_response = await accounts.verify_session(req.cookies["session"]);
     if (verify_response["valid"]) {
+        response = await accounts.get_account_attribute(verify_response["user_id"], ["first", "email"]);
+        response.name = response.first; delete response.first;
         response.isSignedIn = true;
-        response.name = await accounts.get_account_attribute(verify_response["user_id"], "first");
     }
     res.send(response);
 }

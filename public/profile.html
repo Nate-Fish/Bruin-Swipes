@@ -1,12 +1,49 @@
-<!-- This HTML Page is a profile for all pages on the Bruinswipes website. -->
 <!DOCTYPE html>
 <html>
     <head>
         <title>BruinSwipes Profile</title>
 
         <script src="js/global.js"></script>
+        <script src="js/profile.js"></script>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <div id="profile_area">
+            <h1 class="sign">Welcome <span class="username"></span>!</h1>
+
+            <div style="display:flex; flex-flow: row wrap; justify-content: center; max-width:100%; min-height: 500px; background-color:gray; padding:20px;">
+                <div id="detailsArea" style="display:flex; flex-flow: column nowrap; width: max(300px, 30%); background-color:pink; padding: 20px">
+                    <!-- Image and Name Area -->
+                    <div style="display:flex; flex-flow: column nowrap; align-items: center;">
+                        <img style="width:100px; height:100px; background-color:red">
+                        <h1 style="margin:0">Name</h1>
+                        <p style="margin:0">Description</p>
+                    </div>
+
+                    <ul style="background-color:white; list-style: none">
+                        <li>Email: <span>EMAIL</span></li>
+                        <li>Instagram: <span>INSTA</span></li>
+                    </ul>
+                </div>
+                <div id="infoArea" style="display:flex; flex-flow:column nowrap; width: max(300px, 50%); background-color: aqua; padding: 20px">
+                    <h2>Information</h2>
+                    <h3>Name: <span>NAME</span></h3>
+                    <h3>Email: <span>Email</span></h3>
+                    <button>Change Password</button>
+                    <button>Set Profile Image</button>
+                    <input placeholder="Description"> <button>Change Description</button>
+                    <h3>Active Listings</h3>
+                    <div style="background-color: blueviolet;">
+                        Listings Area
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="lost_profile" style="display:none">
+            <h1>Could not find the profile you were looking for or you're not signed in.</h1>
+        </div>
+
+
     </body>
 </html>
