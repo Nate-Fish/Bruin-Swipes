@@ -5,6 +5,7 @@ const mongo = require('./mongodb-library.js');
 const crypto = require('crypto');
 const fs = require('fs');;
 const { ObjectId } = require('mongodb'); // Necessary to interpret mongodb objectids
+const { update_docs } = require('./mongodb-library.js');
 
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
@@ -135,10 +136,11 @@ async function sign_up(first, last, password, email) {
         user_id = new_account["insertedId"].toString();
         // Save a new profile for the user
         saveMe = {
-            "TIME": (new Date()).getTime(),
-            "EMAIL": email,
-            "DESCRIPTION": "Description not yet set.",
-            "USER_ID": user_id
+            "time": (new Date()).getTime(),
+            "email": email,
+            "description": "Description not yet set.",
+            "img": null,
+            "user_id": user_id
         };
         await mongo.add_data(saveMe, "Accounts", "profiles");
     }
@@ -345,6 +347,34 @@ async function certify (user_id, email) {
     }
 }
 
+/**
+ * Fetch a user profile given email, otherwise return null if not found
+ * @param {*} EMAIL 
+ * @returns 
+ */
+async function fetch_profile (email){
+    let value = null;
+    try {
+        let filter = {"email":email};
+        let acc = (await mongo.get_data(filter, "Accounts", "profiles"))[0];
+        value = acc;
+        delete value["user_id"];
+    } catch (error) {}
+    return value || null;
+}
+
+async function post_profile (user_id, img){
+    let response = {status:"fail"};
+    try {
+        let filter = {"user_id": user_id};
+        let update = {$set:{"img":img}};
+        let result = await mongo.update_docs(filter, update, "Accounts", "profiles");
+        console.log("RESULT", result)
+        result.modifiedCount == 1 && (response.status = "success");
+    } catch (error) {}
+    return response;
+}
+
 module.exports = {
-    sign_up, login, get_account_attribute, issue_session, verify_session, certify
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify, fetch_profile, post_profile
 }

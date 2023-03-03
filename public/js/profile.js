@@ -21,15 +21,16 @@
  * 
  * @param {String|null} email 
  */
-function view(email) {
+async function view(email) {
     if (email == null) {
         getElem("profile_area").style.display = "none";
         getElem("lost_profile").style.display = "block";
     }
-
+    console.log(email);
     // Dynamically fill in elements based on the fetch call for the profile
-    // makeRequest("/get-profile?email=" + email)
-
+    let response = await makeRequest("/fetch-profile?email=" + email);
+    console.log(response);
+    getElem("profileImg").src = response.img;
 
 }
 
@@ -46,5 +47,20 @@ function main(signedIn) {
 
     view(email);
 }
+
+function encodeImageFileAsURL(element) {
+    var file = element.files[0];
+    var reader = new FileReader();
+    reader.onloadend = async function() {
+
+        // let img = quickCreate("img", {"src": reader.result});
+        // getElem("infoArea").append(img);
+        let response = await(makeRequest('/post-profile', {img : reader.result}));
+        console.log(response);
+
+    }
+    reader.readAsDataURL(file);
+
+  }
 
 signInQueue.push(main);

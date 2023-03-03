@@ -15,6 +15,7 @@ const mongo = require('./mongodb-library.js');
 const accounts = require('./accounts.js');
 const fs = require('fs');
 const {emailHandler} = require('./email-service.js');
+const req = require('express/lib/request');
 
 /**
  * Sign up an account. If the user correctly provides all parameters and a valid email
@@ -171,10 +172,43 @@ async function certify(req, res) {
     let email = req.query.email;
 
     let certify_response = await accounts.certify(user_id, email);
+    
+    res.send(certify_response || {status: "fail"});
 
-    res.send(certify_response);
+}
+
+/**
+ * Fetch a profile.
+ * 
+ * @param {JSON} req We expect query to contain URL parameters such that req.params =
+ * {
+ *      email: {String}
+ * }
+ */
+async function fetch_profile (req, res) {
+    let email = req.query.email;
+    let response = await accounts.fetch_profile(email);
+
+    res.send(response|| {status: "fail"});
+}
+
+async function post_profile(req, res) {
+    //Expect res to have body.data attribute
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        res.send(response);
+        return;
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    
+    // MAKE SURE YOUR RESPONSES ARE STANDARDIZED!!!
+    if (!verify_response["valid"]) {
+        res.send(response);
+    }
+    
+    let response = await accounts.post_profile(verify_response["user_id"], req.body.img);
+    res.send(response);
 }
 
 module.exports = {
-    sign_up, login, logout, verify_session, certify
+    sign_up, login, logout, verify_session, certify, fetch_profile, post_profile
 }

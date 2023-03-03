@@ -14,7 +14,7 @@
                 <div id="detailsArea" style="display:flex; flex-flow: column nowrap; width: max(300px, 30%); background-color:pink; padding: 20px">
                     <!-- Image and Name Area -->
                     <div style="display:flex; flex-flow: column nowrap; align-items: center;">
-                        <img style="width:100px; height:100px; background-color:red">
+                        <img id="profileImg" style="width:100px; height:100px; background-color:red">
                         <h1 style="margin:0">Name</h1>
                         <p style="margin:0">Description</p>
                     </div>
@@ -27,6 +27,7 @@
                 <div id="infoArea" style="display:flex; flex-flow:column nowrap; width: max(300px, 50%); background-color: aqua; padding: 20px">
                     <h2>Information</h2>
                     <h3>Name: <span>NAME</span></h3>
+                    <input type="file" onchange="encodeImageFileAsURL(this)" />
                     <h3>Email: <span>Email</span></h3>
                     <button>Change Password</button>
                     <button>Set Profile Image</button>

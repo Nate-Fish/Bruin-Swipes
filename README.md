@@ -67,3 +67,42 @@ For any process that involves communication between the server and client do the
 3. Declare your function in its respective area (GET or POST) in route-handler.js.
 4. Test your request on the frontend (perhaps in a React Object).
 
+## Schema
+
+### Accounts Schema
+<br>
+
+```
+{
+  _id: ObjectId
+  
+  time: double
+  
+  username: string
+
+  email: double
+
+  hash: string
+
+  salt: null
+}
+```
+<br>
+
+### Profile Schema
+
+```
+{
+  email: string
+  
+  _id : ObjectId
+  
+  user_id: string
+
+  time: double
+
+  description: string
+
+  img: null
+}
+```
