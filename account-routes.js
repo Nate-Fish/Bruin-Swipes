@@ -1,55 +1,60 @@
-/**
- * THIS FILE HAS NOT BEEN IMPLEMENTED AS NEEDED YET.
+/** account-routes.js
  * 
- * THIS IS JUST A TEMPLATE UNTIL FUTURE NOTICE.
+ * A file that specifies how to handle all general account
+ * based route activities (sign up, login, verify, etc.).
  * 
+ * Uses an authentication system (with the email service)
+ * to certify that the user has ownership of their given
+ * UCLA email account.
  * 
- * WE LOOK TO MAKE A CLASS TO HANDLE ROUTING / UTILIZE EXPRESS ROUTERS TO MAKE THIS PROCESS NICER
  */
+
 
 //NEEDED REQUIREMENTS (INCLUDE NEW MODULES AS NEEDED)
 const mongo = require('./mongodb-library.js');
-const accounts = require('./accounts.js')
+const accounts = require('./accounts.js');
 const fs = require('fs');
+const {emailHandler} = require('./email-service.js');
 
 /**
- * Sign up an account, manipulating the user's cookies to store their special session ID.
+ * Sign up an account. If the user correctly provides all parameters and a valid email
+ * send them a confirmation email with a link to the certified route using the emailService.
+ * 
+ * They are then expected to verify themselves by using the link and logging on, at which
+ * point we provide them their session.
  * 
  * @param {*} req expects req.body to be equivalent to a JSON of the following structure
  * {
- *      username: {STRING},
- *      password: {STRING},
- *      email: {STRING}
+ *      first: {String},
+ *      last: {String},
+ *      password: {String},
+ *      email: {String}
  * }
- * @param {*} res 
- * @returns a response on whether the user's request was successful. If it was, 
- * a session is automatically issued and the cookie is set. Of the form:
+ * @param {*} res a response on whether the user's request was successful. If it was, 
+ * they are sent an email to verify their account. Of the form:
  * {
- *      info: "ACCOUNT CREATED" / ...
- *      account_created: true / false
+ *      info: {String}
+ *      accountCreated: {Boolean}
  * }
  */
 async function sign_up(req, res) {
-    //TODO: Perform some error checking possibly, parsing, cleaning up,etc.
-    let username = req.body.username;
+    let first = req.body.first;
+    let last = req.body.last;
     let password = req.body.password;
     let email = req.body.email;
 
     //Sign up the account
-    let sign_up_response = await accounts.sign_up(username, password, email);
+    let response = await accounts.sign_up(first, last, password, email);
 
-    if (sign_up_response["account_created"]) {
-        //Issue a new session using the account's _id
-        let session_response = await accounts.issue_session(sign_up_response["user_id"]);
+    if (response["accountCreated"]) {
+        // Send an email to the client here.
 
-        res.cookie("session", session_response["hash"], {
-            maxAge: 5 * 24 * 60 * 60 * 1000,
-            httpOnly: true
-        });
+        emailHandler.certify_email(req.protocol + "://" + req.get('host'), 
+        response["name"], response["email"], response["user_id"]);
     }
     res.send({
-        "info": sign_up_response["info"],
-        "account_created": sign_up_response["account_created"]
+        "info": response["info"],
+        "accountCreated": response["accountCreated"]
     });
 }
 
@@ -57,28 +62,27 @@ async function sign_up(req, res) {
  * Login in a user. Sets session in cookie (for 24 hours.)
  * @param {*} req The request should have a body that has the following structure:
  * {
- *      username: {STRING},
- *      password: {STRING}
+ *      email: {String},
+ *      password: {String}
  * }
  * @param {*} res The result is a JS object of the following structure:
  * {
- *      loggedIn: true / false,
- *      info: {STRING},
+ *      loggedIn: {Boolean},
+ *      info: {String},
  * }
  */
 async function login(req, res) {
-    //TODO: Perform some error checking possibly, parsing, cleaning up, etc.
-    let username = req.body.username;
+    let email = req.body.email;
     let password = req.body.password;
     let login_response = {
         info: "FAILED",
         "loggedIn": false
     }
     try {
-        login_response = await accounts.login(username, password);
+        login_response = await accounts.login(email, password);
 
         if (login_response["loggedIn"]) {
-            //Issue a new session using the account's _id
+            // Issue a new session using the account's _id
             let session_response = await accounts.issue_session(login_response["user_id"]);
             res.cookie("session", session_response["hash"], {
                 maxAge: 5 * 24 * 60 * 60 * 1000,
@@ -103,7 +107,7 @@ async function login(req, res) {
  *      info: [STRING]
  * }
  */
-async function logout(req, res) {
+async function logout (req, res) {
     try {
         let x = req.cookies["session"];
     } catch (error) {
@@ -129,16 +133,14 @@ async function logout(req, res) {
  * @param {*} req 
  * @param {JSON} res An object of the form:
  * {
- *      isSignedIn: true / false,
- *      username: [STRING],
- *      data: [STRING]
+ *      isSignedIn: {Boolean},
+ *      first: {String},
  * }
  */
 async function verify_session(req, res) {
     let response = {
         isSignedIn: false,
-        username: null,
-        data: null
+        name: null,
     };
     if (req.cookies == undefined || req.cookies["session"] == undefined) {
         res.send(response);
@@ -148,12 +150,29 @@ async function verify_session(req, res) {
     let verify_response = await accounts.verify_session(req.cookies["session"]);
     if (verify_response["valid"]) {
         response.isSignedIn = true;
-        response.username = await accounts.get_account_username(verify_response["user_id"]);
+        response.name = await accounts.get_account_name(verify_response["user_id"]);
     }
     res.send(response);
 }
 
+/**
+ * Certify that an account owns their UCLA account and update their certified flag.
+ * 
+ * @param {JSON} req We expect query to contain URL parameters such that req.params =
+ * {
+ *      user_id: {String},
+ *      email: {String}
+ * }
+ */
+async function certify(req, res) {
+    let user_id = req.query.user_id;
+    let email = req.query.email;
+
+    let certify_response = await accounts.certify(user_id, email);
+
+    res.send(certify_response);
+}
 
 module.exports = {
-    sign_up, login, logout, verify_session
+    sign_up, login, logout, verify_session, certify
 }

@@ -1,0 +1,96 @@
+<!-- 
+    sign.html
+
+    Allow users to signup/login into their account. If a user tries to sign up for an
+    account, make sure that they provide a valid UCLA email and Full Name (we don't use usernames).
+
+    @author Pirjot Atwal
+ -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BruinSwipes Signup/Login</title>
+
+    <script src="js/global.js" data-hideNav="true"></script>
+    <script src="js/sign.js"></script>
+</head>
+
+<body>
+    <h1 style="text-align:center">Sign Up / Login Page</h1>
+
+    <!-- TODO: Move to CSS File -->
+
+    <div style="display: flex; flex-flow:column nowrap; align-items: center;"><a href="index.html">&lt; Back Home</a></div>
+
+    <!-- Parent Div -->
+    <div id="signParent" style="
+            padding: 40px;
+            max-width: 600px;
+            margin: 40px auto;
+            border-radius: 5%;
+            background-color: #c1bdba;
+            min-width: 480px;
+        ">
+
+        <!-- Buttons -->
+        <ul style="list-style: none; padding: 0; margin: 0 auto 100px auto">
+            <li id="signUpTab"
+                style="float:left; width: 48%; text-align:center; cursor: pointer; background-color:blue; border: 1px solid black">
+                <h3>Sign Up</h3>
+            </li>
+            <li id="loginTab"
+                style="float:left; width: 48%; text-align:center; cursor: pointer; background-color: blue; border: 1px solid black">
+                <h3>Login</h3>
+            </li>
+        </ul>
+
+
+        <!-- Sign Up Form -->
+        <div id="signUpForm" style="transition: 3s ease">
+            <h1 style="text-align:center">Sign Up</h1>
+
+            <!-- Name Row -->
+            <div
+                style="display:flex; flex-flow: row nowrap; justify-content: space-between; width: 75%; margin: 0 auto 20px auto">
+                <input id="signup-first" placeholder="First Name">
+                <input id="signup-last" placeholder="Last Name">
+            </div>
+
+            <!-- Email/Password Column -->
+            <div
+                style="display:flex; flex-flow: column nowrap; justify-content: space-evenly; width:75%; grid-gap:20px; margin:auto">
+                <input id="signup-email" placeholder="Email">
+                <input id="signup-password" placeholder="Password">
+                <input id="signup-confirm" placeholder="Confirm Password">
+
+                <!-- Sign Up Button -->
+                <button id="signUpSubmit" style="margin: auto">
+                    Sign Up
+                </button>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" style="transition: 2s ease;">
+            <h1 style="text-align:center">Login</h1>
+
+            <!-- Email/Password Column -->
+            <div
+                style="display:flex; flex-flow: column nowrap; justify-content: space-evenly; width:75%; grid-gap:20px; margin:auto">
+                <input id="login-email" placeholder="Email">
+                <input id="login-password" placeholder="Password">
+
+                <!-- Login Button -->
+                <button id="loginSubmit" style="margin: auto">
+                    Login
+                </button>
+            </div>
+        </div>
+
+        <p id="message" style="text-align:center"></p>
+
+    </div>
+</body>
+
+</html>
