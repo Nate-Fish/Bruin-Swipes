@@ -112,29 +112,9 @@ For any process that involves communication between the server and client do the
 ```
 <br />
 
-### Profile Schema
-
-```
-{
-  email: string
-  
-  _id: ObjectId
-  
-  user_id: string
-
-  time: double
-
-  description: string
-
-  img: null
-}
-```
-<br />
-
 ### Notifications
 ```
 {
-  
   _id: ObjectId
   
   info: string
@@ -151,7 +131,6 @@ For any process that involves communication between the server and client do the
 ### Sessions
 ```
 {
-  
   _id: ObjectId
   
   user_id: string
@@ -168,7 +147,6 @@ For any process that involves communication between the server and client do the
 ### Buying
 ```
 {
-  
   _id: ObjectId
   
   user_id: Int32
@@ -193,7 +171,6 @@ For any process that involves communication between the server and client do the
 ### Selling
 ```
 {
-  
   _id: ObjectId
   
   user_id: Int32
@@ -218,7 +195,6 @@ For any process that involves communication between the server and client do the
 ### Messages
 ```
 {
-  
   _id: ObjectId
   
   sender_id: ObjectId
