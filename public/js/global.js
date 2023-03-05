@@ -16,6 +16,9 @@ let hideNav = Boolean(document.currentScript.getAttribute("data-hideNav"));
 document.head.append(quickCreate("link", {
     "rel": "stylesheet",
     "href": "css/default.css",
+    "rel": "shortcut icon", 
+    "type": "image/png", 
+    "href": "images/favicon_io/favicon-32x32.png",
 }));
 document.head.append(quickCreate("link", {
     "rel": "stylesheet",
@@ -33,10 +36,10 @@ function drawNav() {
 
     document.body.innerHTML = `<div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="closebtn" onclick='closeNav()'>&times;</a>
-        <a href="#">About</a>
-        <a href="#">Services</a>
-        <a href="#">Clients</a>
-        <a href="#">Contact</a>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="market.html">Market</a>
+        <a href="messages.html">Messages</a>
         </div>` +
         document.body.innerHTML;
 
@@ -110,6 +113,13 @@ async function initAccountListeners() {
         area.innerHTML = `<button style="
         margin-right: 20px;
         cursor: pointer;
+        border-style: solid;
+        color: #FFFFFF;
+        border-color: #FFFFFF;
+        border-width: 2px;
+        background-color: #2774AE;
+        font-size: 100%;
+        border-radius: 15px;
         " onclick="logout()">Logout</button>
         
         <a style="border: 2px solid white;
@@ -121,6 +131,7 @@ async function initAccountListeners() {
         outline: none;
         cursor: pointer;
         text-decoration: none;
+        color: #FFFFFF;
         font-size: 18px;
         " href="profile.html">
         <i class="fa fa-address-card"></i>  Welcome <span class="username"></span>!
@@ -139,7 +150,7 @@ async function initAccountListeners() {
         style="border: 2px solid white;
         background-color: #2774AE;
         border-radius: 15px;
-        color: black;
+        color: #FFFFFF;;
         padding: 0.3rem 0.8rem;
         transition: background-color 0.25s;
         outline: none;
@@ -156,6 +167,9 @@ async function initAccountListeners() {
     if (signedIn.isSignedIn) {
         for (let elem of document.getElementsByClassName("username")) {
             elem.textContent = signedIn.name;
+        }
+        for (let elem of document.getElementsByClassName("email")) {
+            elem.textContent = signedIn.email;
         }
     } else { // Hide all sign elements
         for (let elem of document.getElementsByClassName("sign")) {
@@ -260,3 +274,4 @@ document.addEventListener("DOMContentLoaded", (evt) => {
 
     initAccountListeners();
 });
+

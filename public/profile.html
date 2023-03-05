@@ -5,46 +5,37 @@
 
         <script src="js/global.js"></script>
         <script src="js/profile.js"></script>
+        <link href="css/profile.css" rel="stylesheet">
+        <link href="css/default.css" rel="stylesheet">
     </head>
     <body>
         <div id="profile_area">
-            <h1 class="sign">Welcome <span class="username"></span>!</h1>
-
-            <div style="display:flex; flex-flow: row wrap; justify-content: center; max-width:100%; min-height: 500px; background-color:gray; padding:20px;">
-                <div id="detailsArea" style="display:flex; flex-flow: column nowrap; width: max(300px, 30%); background-color:pink; padding: 20px">
-                    <!-- Image and Name Area -->
-                    <div style="display:flex; flex-flow: column nowrap; align-items: center;">
-                        <img id="profileImg" style="width:100px; height:100px; background-color:red">
-                        <h1 style="margin:0">Name</h1>
-                        <p style="margin:0">Description</p>
+            <div class="welcome">Welcome <span class="username"></span>!</div>
+            <div class = "profile">
+                <div id="detailsArea" class="public-profile">
+                    <div class="align">
+                        <img id="profileImg" class = "img_style">
+                        <h1 style="margin: 2px;"><span class="username"></span></h1>
+                        <p>Description</p>
                     </div>
-
-                    <ul style="background-color:white; list-style: none">
+                    <textarea placeholder="Input Bio Here!" class="bio"></textarea>
+                    <!-- <ul>
                         <li>Email: <span>EMAIL</span></li>
                         <li>Instagram: <span>INSTA</span></li>
-                    </ul>
+                    </ul> -->
                 </div>
-                <div id="infoArea" style="display:flex; flex-flow:column nowrap; width: max(300px, 50%); background-color: aqua; padding: 20px">
-                    <h2>Information</h2>
-                    <h3>Name: <span>NAME</span></h3>
-                    <input type="file" onchange="encodeImageFileAsURL(this)" />
-                    <h3>Email: <span>Email</span></h3>
-                    <button>Change Password</button>
-                    <button>Set Profile Image</button>
-                    <input placeholder="Description"> <button>Change Description</button>
-                    <h3>Active Listings</h3>
-                    <div style="background-color: blueviolet;">
-                        Listings Area
-                    </div>
+                <div id="infoArea" class="private-profile">
+                    <div class="info">Information</div>
+                    <h3>Name: <span class="username"></span></h3>
+                    <h3>Set Profile: <input type="file" onchange="encodeImageFileAsURL(this)" /></h3>
+                    <h3>Email: <span class="email"></span></h3>
+                    <h3 style="text-decoration: underline">Active Listings</h3>
+                    <div class="pw-button">Change Password</div>
                 </div>
             </div>
-
         </div>
-
         <div id="lost_profile" style="display:none">
             <h1>Could not find the profile you were looking for or you're not signed in.</h1>
         </div>
-
-
     </body>
 </html>
