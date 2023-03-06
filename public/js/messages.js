@@ -1,5 +1,3 @@
-// import React, { React.useState } from 'react';
-
 function MessageForm(props) {
   const [message, setMessage] = React.useState("");
   const { handleSend } = props;
@@ -9,22 +7,14 @@ function MessageForm(props) {
   };
 
   const handleClick = (event) => {
-    handleSend(message);
-    setMessage('');
+    if (message != '') {
+        handleSend(message);
+        setMessage('');
+    }
   }
-    
-
-  // const handleSend = () => {
-  //   if (message !== '') {
-  //     // Send the code to the database
-  //     console.log(message);   
-  //     // Clear the textbox
-  //     setMessage('');
-  //   }
-  // };
 
   return (
-    <div>
+    <div className="message-input-area">
       <input
         type="text"
         value={message}
@@ -39,7 +29,7 @@ function MessageForm(props) {
       />
       <button 
       onClick={handleClick}
-      className = "button">Send</button>
+      className = "messages-button">Send</button>
     </div>
   );
 }
@@ -64,7 +54,7 @@ function ChatHeader(props) {
   return (
     <div>
 
-      <h2><img src={conversation.avatar} alt="conversation avatar" className = "imageHeader"/> {conversation.name} </h2>
+      <h2><img src={conversation.avatar} alt="conversation avatar" className = "imageHeader" style={{"maxWidth" : "50px"}}/> {conversation.name} </h2>
     </div>
   );
 }
@@ -74,7 +64,6 @@ function ConversationList(props) {
 
   const handleClick = (index) => {
     console.log(index)
-    // setMessages([...messages, {id: messages.length, sender: message.sender, text: message.text, time: currentDate.getDate()}]);
     setCurConversationIndex(index);
   }
 
@@ -122,7 +111,7 @@ function App() {
       messages: [
         {
           received: true,
-          text: "gimme gimme? lets make the message a little longer and even longer lets see how long i can make it before it decides to cut it off",
+          text: "gimme free swipes",
           time: "10:20 AM",
         },
         {
@@ -134,8 +123,6 @@ function App() {
     }
   ]);
   const [curConversationIndex, setCurConversationIndex] = React.useState(null);
-  // const [messages, setMessages] = React.useState([]);
-  
   const handleSend = (message) => {
     // update the conversations array with the new message.
     // only update the current conversation index
@@ -148,13 +135,10 @@ function App() {
     });
     setConversations(newConversations);
   }
-  // const conversations = 
-
-  // const setCCM = (conversation, message)
 
   return (
     <div className="App">
-      <div className="sidebar">
+      <div className="messages-sidebar">
         <ConversationList conversations={conversations} setCurConversationIndex={setCurConversationIndex} />
       </div>
       <div className="chat">

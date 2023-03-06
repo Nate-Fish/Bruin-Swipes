@@ -6,17 +6,27 @@
     margin: 0 auto;
   }
   
-  input[type="text"] {
+  .textbox {
     width: 80%;
-    height: 40px;
+    height: 5vh;
     font-size: 16px;
     padding: 10px;
     border-radius: 20px 0 0 20px;
     border: none;
     outline: none;
   }
-  
-  button {
+  .message-input-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-flow: row nowrap;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    width: 80%;
+  }
+  .messages-button {
     width: 20%;
     height: 40px;
     font-size: 16px;
@@ -30,11 +40,11 @@
     right: 0;
     bottom: 0;
   }
-  .sidebar {
+  .messages-sidebar {
     float: left;
     background-color: #f9f9f9;
     width: 20%;
-    height: 100vh;
+    height: 91.5vh;
     position: relative;
     top: 0;
     left: 0;
@@ -90,13 +100,8 @@
   .conversation.active .message {
     font-weight: bold;
   }
-.textbox {
-    float: right;
-    background-color: #f9f9f9;
-    width: 80%;
-    position: absolute;
-    right: 0;
-    bottom: 0;
+.chat {
+  overflow-y: scroll;
+  height: 81vh;
 }
-  
   
