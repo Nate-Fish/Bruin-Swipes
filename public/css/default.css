@@ -17,6 +17,7 @@ body {
     top: 0;
     left: 0;
     background-color: gold;
+    opacity: 0.9;
     overflow-x: hidden;
     padding-top: 60px;
     transition: 0.5s;
@@ -77,6 +78,7 @@ body {
 
     position: sticky;
     top: 0;
+    z-index: 999;
 }
 
 /* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */

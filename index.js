@@ -30,7 +30,7 @@ const mongo = require('./mongodb-library.js');
 const app = express(); // Build the app
 app.use(cookieParser()); // Allow the app to be able to read cookies from the request
 app.use(express.static('public')); // By default, serve static files from the public folder
-app.use(express.json()); // Allow JSON GET/POST requests
+app.use(express.json({limit: "50mb"})); // Allow JSON GET/POST requests
 
 // Listen on default port or 3000 by default
 let server = app.listen(process.env.PORT || 3000, () => {

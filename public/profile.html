@@ -1,12 +1,41 @@
-<!-- This HTML Page is a profile for all pages on the Bruinswipes website. -->
 <!DOCTYPE html>
 <html>
     <head>
         <title>BruinSwipes Profile</title>
 
         <script src="js/global.js"></script>
+        <script src="js/profile.js"></script>
+        <link href="css/profile.css" rel="stylesheet">
+        <link href="css/default.css" rel="stylesheet">
     </head>
     <body>
-        <h1>Hello World!</h1>
+        <div id="profile_area">
+            <div class="welcome">Welcome <span class="username"></span>!</div>
+            <div class = "profile">
+                <div id="detailsArea" class="public-profile">
+                    <div class="align">
+                        <img id="profileImg" class = "img_style">
+                        <h1 style="margin: 2px;"><span class="username"></span></h1>
+                        <p>Description</p>
+                    </div>
+                    <textarea placeholder="Input Bio Here!" class="bio"></textarea>
+                    <!-- <ul>
+                        <li>Email: <span>EMAIL</span></li>
+                        <li>Instagram: <span>INSTA</span></li>
+                    </ul> -->
+                </div>
+                <div id="infoArea" class="private-profile">
+                    <div class="info">Information</div>
+                    <h3>Name: <span class="username"></span></h3>
+                    <h3>Set Profile: <input type="file" onchange="encodeImageFileAsURL(this)" /></h3>
+                    <h3>Email: <span class="email"></span></h3>
+                    <h3 style="text-decoration: underline">Active Listings</h3>
+                    <div class="pw-button">Change Password</div>
+                </div>
+            </div>
+        </div>
+        <div id="lost_profile" style="display:none">
+            <h1>Could not find the profile you were looking for or you're not signed in.</h1>
+        </div>
     </body>
 </html>

@@ -148,7 +148,7 @@ async function delete_docs_q(query, database = "default", collection = "default"
  * @param {JSON} update For example {$inc: num} (Increments num field in the doc)
  * @param {String} database 
  * @param {String} collection 
- * @returns {DeleteResult}
+ * @returns {UpdateResult}
  */
  async function update_docs(filter, update, database = "default", collection = "default") {
     let response = await client.db(database).collection(collection).updateMany(filter, update);
