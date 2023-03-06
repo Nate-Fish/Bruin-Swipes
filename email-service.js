@@ -116,9 +116,6 @@ class emailService {
             await saveCredentials(this.auth);
         }
 
-        if (!module.exports.notificationHandler) {
-            module.exports.notificationHandler = new notificationService(this);
-        }
     }
 
     checkAuth() {
@@ -238,6 +235,10 @@ class notificationService {
      * @param {emailService} emailHandler 
      */
     constructor(emailHandler) {
+        if (!emailHandler) {
+            return;
+        }
+
         console.log("Notification Service Ready!");
 
         this.emailHandler = emailHandler;
@@ -246,7 +247,7 @@ class notificationService {
         this.collection = "notifications";
 
         // Examples
-        // this.notify_message("Pirjot", "apirjot@gmail.com", null);
+        // this.notify_message("Pirjot", "dev@gmail.com", null);
     }
 
     /**
@@ -264,15 +265,25 @@ class notificationService {
         let user_id = user_id_email;
         if (emailForUserID) {
             user_id = await accounts.get_account_attribute(user_id_email, "_id", true);
+            user_id = user_id.toString();
         }
         
+        // Make sure the notification is of the correct format, if not set default parameters
+        if (!notification.title) {
+            notification.title = "ERROR";
+        }
+        if (!notification.desc) {
+            notification.desc = "ERROR";
+        }
+
         // Setup the notification
         notification.user_id = user_id;
+        notification.time = (new Date()).toDateString();
         notification.read = false;
 
         // Send the email to the given user
         let email = emailForUserID ? user_id_email : await accounts.get_account_attribute(user_id, "email");
-        this.emailHandler.send_email(email, subject, body);
+        // this.emailHandler.send_email(email, subject, body);
 
         // Store the notification
         mongo.add_data(notification, this.database, this.collection);
@@ -284,7 +295,15 @@ class notificationService {
      * @param {String} user_id 
      */
     async readAll(user_id) {
-        mongo.update_docs({user_id: user_id}, {$set: {"read": "true"}}, this.database, this.notification);
+        await mongo.update_docs({user_id: user_id}, {$set: {"read": "true"}}, this.database, this.collection);
+    }
+
+    /**
+     * Get all the notifications for a given user id.
+     * @param {*} user_id 
+     */
+    async getAll(user_id) {
+        return await mongo.get_data({user_id: user_id}, this.database, this.collection);
     }
 
     // DEFINE ALL NEW NOTIFICATIONS
@@ -300,21 +319,28 @@ class notificationService {
      * 5. Message sent from one user to another
      */
 
-    // Send the user a notification that they got a  to = EMAIL
+    /**
+     * Notify a user by sending them a generic message.
+     * @param {*} from 
+     * @param {*} to 
+     * @param {*} messageBody 
+     */
     async notify_message(from, to, messageBody) {
         // Template function
         let body = `<h1>Hi you got a new message from: `+ from +`</h1>`;
 
         // Mongo Notification
         let notification = {
-            "info": "New Message",
-            "other_params": null
+            "title": "New Message",
+            "desc": "This is my description"
         };
         this.notify(to, "New Message", body, notification, true);
     }
 }
 
-module.exports = {emailHandler:new emailService()};
+let emailHandler = new emailService();
+let notificationHandler = new notificationService(emailHandler);
+module.exports = {emailHandler, notificationHandler};
 
 // Email Handler also adds notificationHandler to module.exports
 // module.exports.notificationHandler = new notificationService(module.exports.emailHandler);

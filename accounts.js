@@ -78,7 +78,7 @@ function validateName(first, last) {
  */
 async function email_exists(email) {
     try {
-        return (await mongo.get_data({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts")).length > 0;
+        return await mongo.get_doc({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts") != null;
     } catch (error) {}
 }
 
@@ -170,8 +170,8 @@ async function sign_up(first, last, password, email) {
  */
 async function issue_session(user_id) {
     try {
-        let matching_sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
-        if (matching_sessions.length != 0) { //Just refresh the session if the user already has one
+        let document = await mongo.get_doc({"user_id": user_id}, "Accounts", "sessions");
+        if (document != null) { //Just refresh the session if the user already has one
             await mongo.update_docs({"user_id": user_id}, {$set: {issue_time: (new Date()).getTime()}}, "Accounts", "sessions");
         } else { // Issue a new session
             let hashSalt = genPassword(user_id);
@@ -184,8 +184,7 @@ async function issue_session(user_id) {
             await mongo.add_data(new_doc, "Accounts", "sessions");
         }
         // Send back the the user's session (by re-verifying that it actually showed up in the database)
-        let sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
-        return sessions[0];
+        return await mongo.get_doc({"user_id": user_id}, "Accounts", "sessions");
     } catch (error) {}
 }
 
@@ -210,12 +209,11 @@ async function verify_session(hash) {
         };
     }
     try {
-        let sessions = await mongo.get_data({"hash": hash}, "Accounts", "sessions");
+        let my_session = await mongo.get_doc({"hash": hash}, "Accounts", "sessions");
         let info = "INVALID";
         let valid = false;
         let user_id = 0;
         try {
-            let my_session = sessions[0];
             let issue_time = my_session["issue_time"];
             if (((new Date()).getTime() - issue_time) / 1000 / 60 / 60 / 24 > 1) { // Calculate issue_time, can't be greater than a day
                 info = "EXPIRED";              
@@ -255,16 +253,16 @@ async function login(email, password) {
     let message = "LOGIN FAILED";
     let user_id = 0;
     
-    let accounts = (await mongo.get_data({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts"));
+    let account = await mongo.get_doc({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts");
 
-    if (accounts.length == 0) { // An account with that email doesn't exist
+    if (account == null) { // An account with that email doesn't exist
         message = "ACCOUNT DOES NOT EXIST";
-    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { // Password incorrect
+    } else if (!validPassword(password, account["hash"], account["salt"])) { // Password incorrect
         message = "INCORRECT PASSWORD";
-    } else if (!accounts[0]["certified"]) {
+    } else if (!account["certified"]) {
         message = "UNCERTIFIED ACCOUNT. CHECK YOUR EMAIL."
     } else { // Account is good
-        user_id = accounts[0]["_id"].toString();
+        user_id = account["_id"].toString();
         message = "LOGIN SUCCESSFUL";
         loggedIn = true;
     }
@@ -287,8 +285,8 @@ async function get_account_attribute(user_id_email, attribute, emailforID=false)
     let value = null;
     try {
         let filter = emailforID ? {"email": user_id_email} : {"_id": new ObjectId(user_id_email)};
-        let accs = await mongo.get_data(filter, "Accounts", "accounts");
-        value = accs[0][attribute];
+        let account = await mongo.get_doc(filter, "Accounts", "accounts");
+        value = account[attribute];
     } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING ATTRIBUTE: " + error.message)}
     return value;
 }
@@ -315,12 +313,11 @@ async function certify (user_id, email) {
             break breakMe;
         }
 
-        let matching_accounts = await mongo.get_data({"_id": id}, "Accounts", "accounts");
-        if (matching_accounts.length == 0) {
+        let my_account = await mongo.get_doc({"_id": id}, "Accounts", "accounts");
+        if (my_account == null) {
             info = "Account with matching ID does not exist."
             break breakMe;
         }
-        let my_account = matching_accounts[0];
         if (my_account["email"] != email) {
             info = "Inputted ID and email combo is incorrect."
             break breakMe;

@@ -14,7 +14,7 @@
 const mongo = require('./mongodb-library.js');
 const accounts = require('./accounts.js');
 const fs = require('fs');
-const {emailHandler} = require('./email-service.js');
+const {emailHandler, notificationHandler} = require('./email-service.js');
 
 /**
  * Sign up an account. If the user correctly provides all parameters and a valid email
@@ -173,6 +173,31 @@ async function certify(req, res) {
     res.send(certify_response);
 }
 
+async function get_notifications(req, res) {
+    let response = {"status": "fail"};
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        return res.send(response);
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    if (!verify_response["valid"]) {
+        return res.send(response);
+    }
+    res.send(await notificationHandler.getAll(verify_response["user_id"]));
+}
+
+async function read_notifications(req, res) {
+    let response = {"status": "fail"};
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        return res.send(response);
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    if (!verify_response["valid"]) {
+        return res.send(response);
+    }
+    await notificationHandler.readAll(verify_response["user_id"]);
+    res.send({"status": "success"});
+}
+
 module.exports = {
-    sign_up, login, logout, verify_session, certify
+    sign_up, login, logout, verify_session, certify, get_notifications, read_notifications
 }
