@@ -62,27 +62,13 @@ function validatePassword(password) {
 }
 
 /**
- * Determine if a username is of valid structure.
- * A valid structure is defined as follows:
- * i) Any Alphanumerical characters between the length of 6 to 20
- * ii) No underscore or periods in conjuction
- * 
- * @param {*} username 
- * @returns 
+ * Determine if a given name is in valid format.
+ * @param {String} first 
+ * @param {String} last 
+ * @returns {Boolean}
  */
-function validateUsername(username) {
-    return /^(?=[a-zA-Z0-9._]{6,20}$)(?!.*[_.]{2})[^_.].*[^_.]$/.test(username);
-}
-
-/**
- * Determine if a username already exists in the Accounts/accounts database. (Not case sensitive)
- * @param {String} username 
- * @returns {Boolean} true if the username already exists, false otherwise.
- */
-async function username_exists(username) {
-    try {
-        return (await mongo.get_data({"username": RegExp("^"+username+"$", "i")}, "Accounts", "accounts")).length > 0;
-    } catch (error) {}
+function validateName(first, last) {
+    return first.length > 3 && last.length > 3 && !(first + last).includes(" ");
 }
 
 /**
@@ -97,30 +83,35 @@ async function email_exists(email) {
 }
 
 /**
- * Sign up a new user, using their passed in username and password.
+ * Sign up a new user, using their passed in full name and password.
  * Return an object that symbolizes that status of whether the account was
  * created successfully or not.
  * 
- * @param {String} username A username's requirements is defined by its corresponding function
- * @param {String} password A password's requirements is defined by its corresponding function
- * @return A JSON Object TODO: ADD INFO THAT GETS SENT BACK IN JSON
+ * @param {String} first The user's first name
+ * @param {String} last The user's last name
+ * @param {String} password The user's password
+ * @param {String} email The user's email (unique)
+ * @return A JSON Object of the following format:
+ * {
+        info: {String},
+        accountCreated: {Boolean},
+        user_id: {String},
+    };
  */
-async function sign_up(username, password, email) {
+async function sign_up(first, last, password, email) {
     let createAccount = false;
     let message = "CREATE ACCOUNT FAILED";
     let user_id = 0;
 
     //CHECK REQUIREMENTS
-    if (await username_exists(username)) { //No duplicate accounts
-        message = "USERNAME ALREADY EXISTS";
-    } else if (await email_exists(email)) { //No duplicate email
+    if (await email_exists(email)) { //No duplicate email
         message = "EMAIL ALREADY EXISTS";
     } else if (!validatePassword(password)) {
         message = "PASSWORD DOES NOT MEET SECURITY STANDARDS";
     } else if (!validateEmail(email)) {
         message = "EMAIL IS OF INVALID FORM";
-    } else if (!validateUsername(username)) {
-        message = "USERNAME IS OF INVALID FORM";
+    } else if (!validateName(first, last)) {
+        message = "NAME IS OF INVALID FORM. (No Spaces and greater than 3 characters)";
     } else {
         createAccount = true;
     }
@@ -132,8 +123,10 @@ async function sign_up(username, password, email) {
         // Data to send to MongoDB database
         let saveMe = {
             time: (new Date()).getTime(),
-            username: username,
+            first: first,
+            last: last,
             email: email,
+            certified: false,
             hash: hashSalt.hash,
             salt: hashSalt.salt,
         };
@@ -143,7 +136,7 @@ async function sign_up(username, password, email) {
         // Save a new profile for the user
         saveMe = {
             "TIME": (new Date()).getTime(),
-            "USERNAME": username,
+            "EMAIL": email,
             "DESCRIPTION": "Description not yet set.",
             "USER_ID": user_id
         };
@@ -152,8 +145,10 @@ async function sign_up(username, password, email) {
 
     return {
         info: message,
-        account_created: createAccount,
+        accountCreated: createAccount,
         user_id: user_id,
+        name: first + " " + last,
+        email: email
     };
 }
 
@@ -244,29 +239,31 @@ async function verify_session(hash) {
 
 
 /**
- * Take in a username and password, if it is valid, send back a session.
+ * Take in a email and password, if it is valid, send back a session.
  * 
- * @param {String} username
+ * @param {String} email
  * @param {String} password
  * @returns An object symbolizing if the session was successfully issued.
  * {
- *      info: "LOGIN FAILED" / ...,
- *      user_id: <STRING>,
- *      loggedIn: true / false
+ *      info: {String},
+ *      user_id: {String},
+ *      loggedIn: {Boolean}
  * }
  */
-async function login(username, password) {
+async function login(email, password) {
     let loggedIn = false;
     let message = "LOGIN FAILED";
     let user_id = 0;
     
-    let accounts = (await mongo.get_data({"username": username}, "Accounts", "accounts"));
+    let accounts = (await mongo.get_data({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts"));
 
-    if (accounts.length == 0) { //An account with that username doesn't exist
+    if (accounts.length == 0) { // An account with that email doesn't exist
         message = "ACCOUNT DOES NOT EXIST";
-    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { //Password incorrect
+    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { // Password incorrect
         message = "INCORRECT PASSWORD";
-    } else { //Account is good
+    } else if (!accounts[0]["certified"]) {
+        message = "UNCERTIFIED ACCOUNT. CHECK YOUR EMAIL."
+    } else { // Account is good
         user_id = accounts[0]["_id"].toString();
         message = "LOGIN SUCCESSFUL";
         loggedIn = true;
@@ -279,21 +276,64 @@ async function login(username, password) {
 }
 
 /**
- * Get a person's username using their user_id.
+ * Get a person's first name using their user_id.
  * 
  * @param {String} user_id
- * @returns {String} the person's username (or null if not found)
+ * @returns {String} the person's first name (or null if not found)
  */
-async function get_account_username(user_id) {
-    let username = null;
+async function get_account_name(user_id) {
+    let name = null;
     try {
         let matching_accounts = await mongo.get_data({"_id": new ObjectId(user_id)}, "Accounts", "accounts");
         let my_account = matching_accounts[0];
-        username = my_account["username"];
-    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING USERNAME: " + error.message)}
-    return username;
+        name = my_account["first"];
+    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING NAME: " + error.message)}
+    return name;
+}
+
+/**
+ * Certify a user by checking if there is indeed an account with matching
+ * user id and email. If so, certify them.
+ * @param {*} user_id 
+ * @param {*} email 
+ */
+async function certify (user_id, email) {
+    let info = "Certification Failed";
+    let certified = false;
+
+    // Search for the account
+    breakMe: try {
+        // If the ID is not valid object ID in the first place, we immediately exit.
+        let _id = null;
+        try {
+            id = new ObjectId(user_id);
+        } catch(error) {
+            info = "UserID is of incorrect format."
+            break breakMe;
+        }
+
+        let matching_accounts = await mongo.get_data({"_id": id}, "Accounts", "accounts");
+        if (matching_accounts.length == 0) {
+            info = "Account with matching ID does not exist."
+            break breakMe;
+        }
+        let my_account = matching_accounts[0];
+        if (my_account["email"] != email) {
+            info = "Inputted ID and email combo is incorrect."
+            break breakMe;
+        }
+        // Update the certified status
+        await mongo.update_docs({"_id": id}, {$set: {"certified": true}}, "Accounts", "accounts");
+        info = "Certification success. Please login through the login page.";
+        certified = true;
+    } catch (err) {};
+
+    return {
+        info,
+        certified
+    }
 }
 
 module.exports = {
-    sign_up, login, get_account_username, issue_session, verify_session
+    sign_up, login, get_account_name, issue_session, verify_session, certify
 }
