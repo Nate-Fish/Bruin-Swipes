@@ -5,6 +5,7 @@ const mongo = require('./mongodb-library.js');
 const crypto = require('crypto');
 const fs = require('fs');;
 const { ObjectId } = require('mongodb'); // Necessary to interpret mongodb objectids
+const { update_docs } = require('./mongodb-library.js');
 
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
@@ -135,10 +136,11 @@ async function sign_up(first, last, password, email) {
         user_id = new_account["insertedId"].toString();
         // Save a new profile for the user
         saveMe = {
-            "TIME": (new Date()).getTime(),
-            "EMAIL": email,
-            "DESCRIPTION": "Description not yet set.",
-            "USER_ID": user_id
+            "time": (new Date()).getTime(),
+            "email": email,
+            "description": "Description not yet set.",
+            "img": null,
+            "user_id": user_id
         };
         await mongo.add_data(saveMe, "Accounts", "profiles");
     }
@@ -277,18 +279,22 @@ async function login(email, password) {
  * Retrieve any given attribute using a person's user_id or email
  * from the Accounts database.
  * @param {String} user_id_email
- * @param {String} attribute first, email, etc.
+ * @param {String|Array} attribute first, email, or multiple in a list
  * @param {Boolean} emailforID False if User ID provided, True if email
- * @return the value for the given attribute otherwise null
+ * @return the value for the given attribute (a JSON for attribute:value if list provided) otherwise null
  */
 async function get_account_attribute(user_id_email, attribute, emailforID=false) {
     let value = null;
     try {
         let filter = emailforID ? {"email": user_id_email} : {"_id": new ObjectId(user_id_email)};
-        let account = await mongo.get_doc(filter, "Accounts", "accounts");
-        value = account[attribute];
+        // Check if attribute is an array
+        if (Array.isArray(attribute)) {
+            value = await mongo.get_doc(filter, "Accounts", "accounts", attribute);
+        } else {
+            value = (await mongo.get_doc(filter, "Accounts", "accounts"))[attribute];
+        }
     } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING ATTRIBUTE: " + error.message)}
-    return value;
+    return value || null;
 }
 
 
@@ -334,6 +340,34 @@ async function certify (user_id, email) {
     }
 }
 
+/**
+ * Fetch a user profile given email, otherwise return null if not found
+ * @param {*} EMAIL 
+ * @returns 
+ */
+async function fetch_profile (email){
+    let value = null;
+    try {
+        let filter = {"email":email};
+        let acc = (await mongo.get_data(filter, "Accounts", "profiles"))[0];
+        value = acc;
+        delete value["user_id"];
+    } catch (error) {}
+    return value || null;
+}
+
+async function post_profile (user_id, img){
+    let response = {status:"fail"};
+    try {
+        let filter = {"user_id": user_id};
+        let update = {$set:{"img":img}};
+        let result = await mongo.update_docs(filter, update, "Accounts", "profiles");
+        console.log("RESULT", result)
+        result.modifiedCount == 1 && (response.status = "success");
+    } catch (error) {}
+    return response;
+}
+
 module.exports = {
-    sign_up, login, get_account_attribute, issue_session, verify_session, certify
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify, fetch_profile, post_profile
 }

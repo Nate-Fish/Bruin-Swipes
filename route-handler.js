@@ -29,6 +29,9 @@ function setup_get_routes (app) {
 
     // Read all notifications
     app.get('/read-notifications', (req, res) => account_routes.read_notifications(req, res));
+    
+    // Fetch a profile
+    app.get('/fetch-profile', (req, res) => account_routes.fetch_profile(req,res));
 
     // END ACCOUNT GET ROUTES
 }
@@ -41,6 +44,9 @@ function setup_post_routes (app) {
 
     // Login to an account
     app.post('/login', (req, res) => account_routes.login(req, res));
+
+    //Posts profile
+    app.post('/post-profile', (req, res) => account_routes.post_profile(req, res));
 
     // START ACCOUNT GET ROUTES
 }
