@@ -203,7 +203,7 @@ For any process that involves communication between the server and client do the
 
   time_sent: Timestamp
 
-  conents: string
+  contents: string
 
   listing_id: ObjectId
 }

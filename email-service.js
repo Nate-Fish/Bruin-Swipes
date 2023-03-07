@@ -295,7 +295,7 @@ class notificationService {
      * @param {String} user_id 
      */
     async readAll(user_id) {
-        await mongo.update_docs({user_id: user_id}, {$set: {"read": "true"}}, this.database, this.collection);
+        await mongo.update_docs({user_id: user_id}, {$set: {"read": true}}, this.database, this.collection);
     }
 
     /**

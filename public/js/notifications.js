@@ -82,7 +82,7 @@ function renderNotifications(div, list) {
 }
 
 function showError() {
-    getElem("wrapper").innerHTML = "<h1>Error, Please Sign in to view notifications.</h1>";
+    getElem("wrapper").innerHTML = "<h1>Error, Please Sign in to view notifications.</h1><h1><a href='index.html'>Go Back Home</a></h1>";
 }
 
 function main_notifications(signedIn) {
