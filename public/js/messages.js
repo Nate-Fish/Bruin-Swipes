@@ -45,7 +45,6 @@ function MessageList(props) {
         </div>
       ))}
     </div>
-    // <div>Helo</div>
   );
 }
 function ChatHeader(props) {
@@ -63,7 +62,6 @@ function ConversationList(props) {
   const { conversations, setCurConversationIndex } = props;
 
   const handleClick = (index) => {
-    console.log(index)
     setCurConversationIndex(index);
   }
 
@@ -75,8 +73,8 @@ function ConversationList(props) {
           <div className="conversation-details">
             <div className="preview-name">
               <h3>{conversation.name}</h3> </div>
-            <p className="message">{conversation.messages[0].text.substring(0, 50)}...</p>
-            <div className = "preview-time"> <p>{conversation.messages[0].time}</p> 
+            <p className="message">{conversation.messages[conversation.messages.length - 1].text.substring(0, 30)}...</p>
+            <div className = "preview-time"> <p>{conversation.messages[conversation.messages.length - 1].time}</p> 
               </div>
           </div>
         </div>
@@ -120,33 +118,74 @@ function App() {
           time: "10:32 AM",
         }
       ]
-    }
+    },
+    {
+        id: 3,
+        name: "Swag",
+        avatar: "https://pbs.twimg.com/media/D2Y5afjWsAYqL7u?format=png&name=360x360",
+        messages: [
+          {
+            received: true,
+            text: "I am interested in buying swipes",
+            time: "10:50 AM",
+          },
+        ]
+      }
   ]);
+  let testing = {
+    sender: 100,
+    recipient: 101,
+    read: false,
+    text: "Hello World",
+    time: 101240125 
+  }
   const [curConversationIndex, setCurConversationIndex] = React.useState(null);
   const handleSend = (message) => {
-    // update the conversations array with the new message.
-    // only update the current conversation index
-
+    //get the time in AM/PM format
+    const date = new Date();
+    const showTime = date.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
+    const epochTime = Date.now();
     const newConversations = [...conversations];
     newConversations[curConversationIndex].messages.push({
       received: false,
       text: message,
-      time: "10:32 AM",
+      time: epochTime,
     });
     setConversations(newConversations);
+    //sets the conversation to the top of the list when talked in
+    if (conversations.index != 0) {
+        let temp = conversations[curConversationIndex];
+        let tempArray = [...conversations];
+        tempArray.splice(curConversationIndex, 1);
+        tempArray.unshift(temp);
+        setConversations(tempArray);
+        setCurConversationIndex(0);
+    }
+    // code to scroll to the bottom of the message list when a message is sent
+  }
+  const ophir = {
+    sender: 101,
+    recipient: 100,
+    read: false,
+    text: "Hello World",
+    time: 101240125
   }
 
   return (
-    <div className="App">
+    //create a messages sidebar that says "Chats" above the list of conversations
+      <div className="App">
       <div className="messages-sidebar">
         <ConversationList conversations={conversations} setCurConversationIndex={setCurConversationIndex} />
       </div>
       <div className="chat">
         {curConversationIndex !== null ? (
           <>
+          {/* <h1 className = "messages-title">Chats</h1> */}
             <ChatHeader conversation={conversations[curConversationIndex]} />
             <MessageList className = "messageList" currentConversation={conversations[curConversationIndex]}/>
             <MessageForm handleSend={handleSend}/>
+            <button onClick={() => makeRequest("/send-messages", testing)}>Send Message</button>
+            <button onClick={() => makeRequest("/get-messages", ophir)}>Get Message</button>
           </>
         ) : (
           <div className="no-conversation">No conversation selected</div>
@@ -155,7 +194,6 @@ function App() {
     </div>
   );
 }
-
 const rootNode = document.getElementById('messages-root');
 const root = ReactDOM.createRoot(rootNode);
 root.render(React.createElement(App));

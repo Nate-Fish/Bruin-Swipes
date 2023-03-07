@@ -37,6 +37,12 @@ function setup_post_routes (app) {
     app.post('/login', (req, res) => account_routes.login(req, res));
 
     // START ACCOUNT GET ROUTES
+
+    // Get Messages
+    app.post('/get-messages', (req, res) => account_routes.get_messages(req, res));
+
+    // Send Messages
+    app.post('/send-messages', (req, res) => account_routes.send_messages(req, res));
 }
 
 

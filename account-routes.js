@@ -173,6 +173,43 @@ async function certify(req, res) {
     res.send(certify_response);
 }
 
+async function send_messages(req, res) {
+        // Expect res to have body.data attribute
+        let response = {"status": "fail"};
+        if (req.cookies == undefined || req.cookies["session"] == undefined) {
+            res.send(response);
+            return;
+        }
+        let verify_response = await accounts.verify_session(req.cookies["session"]);
+        
+        // MAKE SURE YOUR RESPONSES ARE STANDARDIZED!!!
+        if (!verify_response["valid"]) {
+            res.send(response);
+        }
+        
+        console.log(verify_response["user_id"]);
+        await accounts.send_messages(verify_response["user_id"], req);
+        res.send({"status": "success"});
+}
+
+async function get_messages(req, res) {
+            // Expect res to have body.data attribute
+            let response = {"status": "fail"};
+            if (req.cookies == undefined || req.cookies["session"] == undefined) {
+                res.send(response);
+                return;
+            }
+            let verify_response = await accounts.verify_session(req.cookies["session"]);
+            
+            // MAKE SURE YOUR RESPONSES ARE STANDARDIZED!!!
+            if (!verify_response["valid"]) {
+                res.send(response);
+            }
+            
+            console.log(verify_response["user_id"]);
+            await accounts.get_messages(verify_response["user_id"], req);
+            res.send({"status": "success"});
+}
 module.exports = {
-    sign_up, login, logout, verify_session, certify
+    sign_up, login, logout, verify_session, certify, send_messages, get_messages
 }

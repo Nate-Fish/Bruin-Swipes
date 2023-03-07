@@ -333,7 +333,31 @@ async function certify (user_id, email) {
         certified
     }
 }
-
+// write function to send messages
+async function send_messages(sender, recipient, message, read, time) {
+    try {
+      const result = await mongo.insert_doc({
+        sender: sender,
+        recipient: recipient,
+        message: message,
+        read: read,
+        time: time
+      }, "Messages", "messages");
+      return result.insertedCount === 1;
+    } catch (error) {
+      console.error("ERROR OCCURRED IN SENDING MESSAGE: " + error.message);
+      return false;
+    }
+  }
+//write function to get messages
+async function get_messages (sender, recipient) {
+    try {
+        let matching_messages = await mongo.get_data({"sender": sender, "recipient": recipient}, "Messages", "messages");
+        console.log(matching_messages)
+        return matching_messages;
+    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message)}
+    return null;
+}
 module.exports = {
-    sign_up, login, get_account_name, issue_session, verify_session, certify
+    sign_up, login, get_account_name, issue_session, verify_session, certify, send_messages, get_messages
 }
