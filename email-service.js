@@ -12,6 +12,8 @@ const fs = require('fs').promises;
 const { raw } = require('express');
 const path = require('path');
 const process = require('process');
+const accounts = require('./accounts.js');
+const mongo = require('./mongodb-library.js');
 
 // Install the following libraries with npm install
 let authenticate, google;
@@ -91,6 +93,8 @@ class emailService {
     /**
      * Return the client either form saved credentials
      * or a new authenticate call to google cloud.
+     * 
+     * Initialize the notification handler.
      *
      * @returns An auth client
      */
@@ -111,6 +115,7 @@ class emailService {
         if (this.auth.credentials) {
             await saveCredentials(this.auth);
         }
+
     }
 
     checkAuth() {
@@ -199,4 +204,143 @@ Content-Type: text/html; charset="UTF-8"
 
 }
 
-module.exports = {emailHandler:new emailService()};
+
+/**
+ * Each user has a collection of notifications to their name,
+ * stored in a collection of notifications some of which are
+ * "active".
+ * 
+ * We assume notifications are either unread or read
+ * and that the handling of notifications for any single user happens
+ * solely through calls to the notificationService.
+ * 
+ * Therefore, to add new notifications we service a route for the user
+ * and send them an email about the specific notification's information.
+ * This class' main job is to parse the specific body for each type
+ * of notification.
+ * 
+ * We have special cases where certain notifications are between users.
+ * In this case, we expect some information to passed in to represent
+ * the user being notified (such as their email).
+ * 
+ * We keep track of all notifications, unread or read and provide
+ * utility routes for the user to fetch their notifications.
+ * 
+ * 
+ */
+
+class notificationService {
+    /**
+     * 
+     * @param {emailService} emailHandler 
+     */
+    constructor(emailHandler) {
+        if (!emailHandler) {
+            return;
+        }
+
+        console.log("Notification Service Ready!");
+
+        this.emailHandler = emailHandler;
+
+        this.database = "Accounts";
+        this.collection = "notifications";
+
+        // Examples
+        // this.notify_message("Pirjot", "dev@gmail.com", null);
+    }
+
+    /**
+     * Notify the given user with user_id or email by sending them
+     * an email with body and storing the notification
+     * provided into their notification database.
+     * 
+     * @param {String} user_id_email The user id or email
+     * @param {String} subject
+     * @param {String} body 
+     * @param {JSON} notification Body to store in MongoDB database
+     * @param {Boolean} emailForUserID False if user_id provided, true otherwise
+     */
+    async notify(user_id_email, subject, body, notification, emailForUserID=false) {
+        let user_id = user_id_email;
+        if (emailForUserID) {
+            user_id = await accounts.get_account_attribute(user_id_email, "_id", true);
+            user_id = user_id.toString();
+        }
+        
+        // Make sure the notification is of the correct format, if not set default parameters
+        if (!notification.title) {
+            notification.title = "ERROR";
+        }
+        if (!notification.desc) {
+            notification.desc = "ERROR";
+        }
+
+        // Setup the notification
+        notification.user_id = user_id;
+        notification.time = (new Date()).toDateString();
+        notification.read = false;
+
+        // Send the email to the given user
+        let email = emailForUserID ? user_id_email : await accounts.get_account_attribute(user_id, "email");
+        // this.emailHandler.send_email(email, subject, body);
+
+        // Store the notification
+        mongo.add_data(notification, this.database, this.collection);
+    }
+
+    /**
+     * Set all notifications to read for this user.
+     * 
+     * @param {String} user_id 
+     */
+    async readAll(user_id) {
+        await mongo.update_docs({user_id: user_id}, {$set: {"read": true}}, this.database, this.collection);
+    }
+
+    /**
+     * Get all the notifications for a given user id.
+     * @param {*} user_id 
+     */
+    async getAll(user_id) {
+        return await mongo.get_data({user_id: user_id}, this.database, this.collection);
+    }
+
+    // DEFINE ALL NEW NOTIFICATIONS
+
+    /**
+     * TODO: Notifications for each type of user interaction:
+     * 
+     * Examples:
+     * 1. Profile Modification (Unnecessary)
+     * 2. Monthly Statistics (Unnecessary)
+     * 3. User listing for selling has new user
+     * 4. Request has been filled
+     * 5. Message sent from one user to another
+     */
+
+    /**
+     * Notify a user by sending them a generic message.
+     * @param {*} from 
+     * @param {*} to 
+     * @param {*} messageBody 
+     */
+    async notify_message(from, to, messageBody) {
+        // Template function
+        let body = `<h1>Hi you got a new message from: `+ from +`</h1>`;
+
+        // Mongo Notification
+        let notification = {
+            "title": "New Message",
+            "desc": "This is my description"
+        };
+        this.notify(to, "New Message", body, notification, true);
+    }
+}
+
+let emailHandler = new emailService();
+let notificationHandler = new notificationService(emailHandler);
+module.exports = {emailHandler, notificationHandler};
+
+// Email Handler also adds notificationHandler to module.exports
+// module.exports.notificationHandler = new notificationService(module.exports.emailHandler);

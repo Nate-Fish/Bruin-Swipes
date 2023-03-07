@@ -37,6 +37,7 @@
 /**
  * When a user selects a tab, show the corresponding form and disable the other one.
  */
+let activeWindow = "sign";
 function selectTab() {
     // Initialize variables
     let signTab = getElem('signUpTab');
@@ -55,7 +56,7 @@ function selectTab() {
      * @param {*} formToShow 
      * @param {*} formToHide 
      */
-    function showTab(formToShow, formToHide) {
+    function showTab(formToShow, formToHide, active) {
         message.innerText = "";
         formToShow.style.display = "block";
         formToHide.style.display = "none";
@@ -63,17 +64,19 @@ function selectTab() {
 
         formToShow.style.opacity = "100";
         formToHide.style.opacity = "0";
+
+        activeWindow = active;
     }
 
-    signTab.addEventListener("click", (evt) => showTab(signUpForm, loginForm));
-    loginTab.addEventListener("click", (evt) => showTab(loginForm, signUpForm));
+    signTab.addEventListener("click", (evt) => showTab(signUpForm, loginForm, "sign"));
+    loginTab.addEventListener("click", (evt) => showTab(loginForm, signUpForm, "login"));
 }
 
 // Signup and Login Buttons
 function buttonSetup() {
     // Initialize variables
     let signButton = getElem("signUpSubmit");
-    let loginSubmit = getElem("loginSubmit");
+    let loginButton = getElem("loginSubmit");
     let message = getElem("message");
     
     signButton.addEventListener("click", async (evt) => {
@@ -102,7 +105,7 @@ function buttonSetup() {
         }
     });
 
-    loginSubmit.addEventListener("click", async (evt) => {
+    loginButton.addEventListener("click", async (evt) => {
         message.innerText = "Logging in...";
 
         // Get input values
@@ -120,6 +123,12 @@ function buttonSetup() {
             setTimeout(() => location.assign('/index.html'), 2000);
         } else {
             message.innerHTML = "Login failed. Reason: " + res.info;
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.keyCode == 13) {
+            activeWindow == "sign" ? signButton.click() : loginButton.click();
         }
     });
 }

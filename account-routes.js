@@ -14,7 +14,39 @@
 const mongo = require('./mongodb-library.js');
 const accounts = require('./accounts.js');
 const fs = require('fs');
-const {emailHandler} = require('./email-service.js');
+const {emailHandler, notificationHandler} = require('./email-service.js');
+
+
+// HELPER FUNCTIONS
+
+/**
+ * Test if a user is signed in to a session using their cookies from the given
+ * req object and return the verify session response if they are. Otherwise,
+ * send a standard response to the user that they are not signed in and return
+ * false.
+ * 
+ * Ensure that after the usage of this function, if it returns false, you immediately
+ * end the route.
+ * 
+ * @param {*} req Assumes req.cookies is initialized
+ * @param {*} res
+ * @returns A verify_session response or false
+ */
+async function test_signed(req, res) {
+    let response = {isSignedIn: false, "status": "fail", "message": "You are not signed in."};
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        res.send(response);
+        return false;
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    if (!verify_response["valid"]) {
+        res.send(response);
+        return false;
+    }
+    return verify_response;
+}
+
+
 
 /**
  * Sign up an account. If the user correctly provides all parameters and a valid email
@@ -134,24 +166,18 @@ async function logout (req, res) {
  * @param {JSON} res An object of the form:
  * {
  *      isSignedIn: {Boolean},
- *      first: {String},
+ *      name: {String},
  * }
  */
 async function verify_session(req, res) {
-    let response = {
-        isSignedIn: false,
-        name: null,
-    };
-    if (req.cookies == undefined || req.cookies["session"] == undefined) {
-        res.send(response);
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
         return;
     }
-    
-    let verify_response = await accounts.verify_session(req.cookies["session"]);
-    if (verify_response["valid"]) {
-        response.isSignedIn = true;
-        response.name = await accounts.get_account_name(verify_response["user_id"]);
-    }
+
+    let response = await accounts.get_account_attribute(verify_response["user_id"], ["first", "email"]);
+    response.name = response.first; delete response.first;
+    response.isSignedIn = true;
     res.send(response);
 }
 
@@ -169,8 +195,67 @@ async function certify(req, res) {
     let email = req.query.email;
 
     let certify_response = await accounts.certify(user_id, email);
+    
+    res.send(certify_response || {status: "fail"});
 
-    res.send(certify_response);
+}
+
+/**
+ * Fetch a profile.
+ * 
+ * @param {JSON} req We expect query to contain URL parameters such that req.params =
+ * {
+ *      email: {String}
+ * }
+ */
+async function fetch_profile (req, res) {
+    let email = req.query.email;
+    let response = await accounts.fetch_profile(email);
+
+    res.send(response|| {status: "fail"});
+}
+
+/**
+ * Post a profile.
+ * 
+ * @param {*} req We expect the body to have atleast one key with the following form:
+ * {
+ *      img?: {String},
+ *      bio?: {String}
+ * }
+ * @param {*} res 
+ * @returns 
+ */
+async function post_profile(req, res) {
+    //Expect res to have body.data attribute
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    
+    let params = {
+        bio: req.body.bio,
+        img: req.body.img
+    }
+    let response = await accounts.post_profile(verify_response["user_id"], params);
+    res.send(response);
+}
+
+async function get_notifications(req, res) {
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    res.send(await notificationHandler.getAll(verify_response["user_id"]));
+}
+
+async function read_notifications(req, res) {
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    await notificationHandler.readAll(verify_response["user_id"]);
+    res.send({"status": "success"});
 }
 
 
@@ -265,5 +350,5 @@ async function post_listing(req, res) {
 }
 
 module.exports = {
-    sign_up, login, logout, verify_session, certify, get_listings, post_listing
+    sign_up, login, logout, verify_session, certify, get_listings, post_listing, get_notifications, read_notifications, fetch_profile, post_profile
 }

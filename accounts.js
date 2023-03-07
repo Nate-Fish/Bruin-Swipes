@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const fs = require('fs');;
 const { ObjectId } = require('mongodb'); // Necessary to interpret mongodb objectids
 const { query } = require('express');
+const { update_docs } = require('./mongodb-library.js');
 
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
@@ -15,7 +16,7 @@ const { query } = require('express');
  * @param {String} salt - The salt stored in the database
  * @return {Boolean} if password is correct
  */
- function validPassword(password, hash, salt) {
+function validPassword(password, hash, salt) {
     var hashVerify = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
     return hash === hashVerify;
 }
@@ -41,8 +42,7 @@ function genPassword(password) {
  * @param {*} email 
  * @returns True if valid, false otherwise
  */
-function validateEmail(email) 
-{
+function validateEmail(email) {
     return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
 }
 
@@ -79,8 +79,8 @@ function validateName(first, last) {
  */
 async function email_exists(email) {
     try {
-        return (await mongo.get_data({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts")).length > 0;
-    } catch (error) {}
+        return await mongo.get_doc({ "email": RegExp("^" + email + "$", "i") }, "Accounts", "accounts") != null;
+    } catch (error) { }
 }
 
 /**
@@ -136,10 +136,12 @@ async function sign_up(first, last, password, email) {
         user_id = new_account["insertedId"].toString();
         // Save a new profile for the user
         saveMe = {
-            "TIME": (new Date()).getTime(),
-            "EMAIL": email,
-            "DESCRIPTION": "Description not yet set.",
-            "USER_ID": user_id
+            "time": (new Date()).getTime(),
+            "name": first + ' ' + last,
+            "email": email,
+            "description": "Description not yet set.",
+            "img": null,
+            "user_id": user_id
         };
         await mongo.add_data(saveMe, "Accounts", "profiles");
     }
@@ -171,9 +173,9 @@ async function sign_up(first, last, password, email) {
  */
 async function issue_session(user_id) {
     try {
-        let matching_sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
-        if (matching_sessions.length != 0) { //Just refresh the session if the user already has one
-            await mongo.update_docs({"user_id": user_id}, {$set: {issue_time: (new Date()).getTime()}}, "Accounts", "sessions");
+        let document = await mongo.get_doc({ "user_id": user_id }, "Accounts", "sessions");
+        if (document != null) { //Just refresh the session if the user already has one
+            await mongo.update_docs({ "user_id": user_id }, { $set: { issue_time: (new Date()).getTime() } }, "Accounts", "sessions");
         } else { // Issue a new session
             let hashSalt = genPassword(user_id);
             let new_doc = {
@@ -185,9 +187,8 @@ async function issue_session(user_id) {
             await mongo.add_data(new_doc, "Accounts", "sessions");
         }
         // Send back the the user's session (by re-verifying that it actually showed up in the database)
-        let sessions = await mongo.get_data({"user_id": user_id}, "Accounts", "sessions");
-        return sessions[0];
-    } catch (error) {}
+        return await mongo.get_doc({ "user_id": user_id }, "Accounts", "sessions");
+    } catch (error) { }
 }
 
 /**
@@ -211,27 +212,26 @@ async function verify_session(hash) {
         };
     }
     try {
-        let sessions = await mongo.get_data({"hash": hash}, "Accounts", "sessions");
+        let my_session = await mongo.get_doc({ "hash": hash }, "Accounts", "sessions");
         let info = "INVALID";
         let valid = false;
         let user_id = 0;
         try {
-            let my_session = sessions[0];
             let issue_time = my_session["issue_time"];
             if (((new Date()).getTime() - issue_time) / 1000 / 60 / 60 / 24 > 1) { // Calculate issue_time, can't be greater than a day
-                info = "EXPIRED";              
+                info = "EXPIRED";
             } else if (validPassword(my_session["user_id"], hash, my_session["salt"])) { // Check decryption
                 user_id = my_session["user_id"];
                 info = "VALID";
                 valid = true;
             }
-        } catch (error) {}
+        } catch (error) { }
         return {
             info: info,
             valid: valid,
             user_id: user_id
         };
-    } catch(error) {}
+    } catch (error) { }
     return {
         valid: false
     };
@@ -255,17 +255,17 @@ async function login(email, password) {
     let loggedIn = false;
     let message = "LOGIN FAILED";
     let user_id = 0;
-    
-    let accounts = (await mongo.get_data({"email": RegExp("^"+email+"$", "i")}, "Accounts", "accounts"));
 
-    if (accounts.length == 0) { // An account with that email doesn't exist
+    let account = await mongo.get_doc({ "email": RegExp("^" + email + "$", "i") }, "Accounts", "accounts");
+
+    if (account == null) { // An account with that email doesn't exist
         message = "ACCOUNT DOES NOT EXIST";
-    } else if (!validPassword(password, accounts[0]["hash"], accounts[0]["salt"])) { // Password incorrect
+    } else if (!validPassword(password, account["hash"], account["salt"])) { // Password incorrect
         message = "INCORRECT PASSWORD";
-    } else if (!accounts[0]["certified"]) {
+    } else if (!account["certified"]) {
         message = "UNCERTIFIED ACCOUNT. CHECK YOUR EMAIL."
     } else { // Account is good
-        user_id = accounts[0]["_id"].toString();
+        user_id = account["_id"].toString();
         message = "LOGIN SUCCESSFUL";
         loggedIn = true;
     }
@@ -277,20 +277,27 @@ async function login(email, password) {
 }
 
 /**
- * Get a person's first name using their user_id.
- * 
- * @param {String} user_id
- * @returns {String} the person's first name (or null if not found)
+ * Retrieve any given attribute using a person's user_id or email
+ * from the Accounts database.
+ * @param {String} user_id_email
+ * @param {String|Array} attribute first, email, or multiple in a list
+ * @param {Boolean} emailforID False if User ID provided, True if email
+ * @return the value for the given attribute (a JSON for attribute:value if list provided) otherwise null
  */
-async function get_account_name(user_id) {
-    let name = null;
+async function get_account_attribute(user_id_email, attribute, emailforID = false) {
+    let value = null;
     try {
-        let matching_accounts = await mongo.get_data({"_id": new ObjectId(user_id)}, "Accounts", "accounts");
-        let my_account = matching_accounts[0];
-        name = my_account["first"];
-    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING NAME: " + error.message)}
-    return name;
+        let filter = emailforID ? { "email": user_id_email } : { "_id": new ObjectId(user_id_email) };
+        // Check if attribute is an array
+        if (Array.isArray(attribute)) {
+            value = await mongo.get_doc(filter, "Accounts", "accounts", attribute);
+        } else {
+            value = (await mongo.get_doc(filter, "Accounts", "accounts"))[attribute];
+        }
+    } catch (error) { console.log("ERROR OCCURRED IN RETRIEVING ATTRIBUTE: " + error.message) }
+    return value || null;
 }
+
 
 /**
  * Certify a user by checking if there is indeed an account with matching
@@ -298,7 +305,7 @@ async function get_account_name(user_id) {
  * @param {*} user_id 
  * @param {*} email 
  */
-async function certify (user_id, email) {
+async function certify(user_id, email) {
     let info = "Certification Failed";
     let certified = false;
 
@@ -308,26 +315,25 @@ async function certify (user_id, email) {
         let _id = null;
         try {
             id = new ObjectId(user_id);
-        } catch(error) {
+        } catch (error) {
             info = "UserID is of incorrect format."
             break breakMe;
         }
 
-        let matching_accounts = await mongo.get_data({"_id": id}, "Accounts", "accounts");
-        if (matching_accounts.length == 0) {
+        let my_account = await mongo.get_doc({ "_id": id }, "Accounts", "accounts");
+        if (my_account == null) {
             info = "Account with matching ID does not exist."
             break breakMe;
         }
-        let my_account = matching_accounts[0];
         if (my_account["email"] != email) {
             info = "Inputted ID and email combo is incorrect."
             break breakMe;
         }
         // Update the certified status
-        await mongo.update_docs({"_id": id}, {$set: {"certified": true}}, "Accounts", "accounts");
+        await mongo.update_docs({ "_id": id }, { $set: { "certified": true } }, "Accounts", "accounts");
         info = "Certification success. Please login through the login page.";
         certified = true;
-    } catch (err) {};
+    } catch (err) { };
 
     return {
         info,
@@ -478,7 +484,59 @@ async function insert_listing(user_id, req) {
     let response = await mongo.add_data(listing, database = "Listings", collection = "listings");
 }
 
+/**
+ * Fetch a user profile given email, otherwise return null if not found
+ * @param {*} EMAIL 
+ * @returns 
+ */
+
+async function fetch_profile(email) {
+    let value = null;
+    try {
+        let filter = { "email": email };
+        let acc = await mongo.get_doc(filter, "Accounts", "profiles");
+        value = acc;
+        delete value["user_id"];
+    } catch (error) { }
+    return value || null;
+}
+
+/**
+ * Post a profile given the profile parameters.
+ * We simply just update on the given parameters, unless they are undefined.
+ * We bar the user from being able to update values in their profile they
+ * shouldn't have access to. Valid parameters to update are given below:
+ * 
+ * We allow the values to be undefined as well, we filter out these values.
+ * 
+ * @param {String} user_id 
+ * @param {JSON} params An object with keys matching those in the BIO Schema:
+ * {
+ *      bio: string,
+ *      image: string
+ * }
+ * @returns 
+ */
+async function post_profile(user_id, params) {
+    let response = { status: "fail" };
+    let validParams = ["bio", "img"];
+    breakMe: try {
+        let filter = { "user_id": user_id };
+        let update = {};
+        for (let param of Object.keys(params)) {
+            validParams.includes(param) && params[param] && (update[param] = params[param]);
+        }
+        if (update == {}) {
+            break breakMe;
+        }
+        update = {$set: update};
+        let result = await mongo.update_docs(filter, update, "Accounts", "profiles");
+        result.modifiedCount == 1 && (response.status = "success");
+    } catch (error) {console.error(error)}
+    return response;
+}
+
 
 module.exports = {
-    sign_up, login, get_account_name, issue_session, verify_session, certify, query_listings, insert_listing
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify, query_listings, insert_listing, fetch_profile, post_profile
 }

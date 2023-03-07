@@ -67,3 +67,144 @@ For any process that involves communication between the server and client do the
 3. Declare your function in its respective area (GET or POST) in route-handler.js.
 4. Test your request on the frontend (perhaps in a React Object).
 
+<br />
+
+## Schema
+
+### Accounts Schema
+```
+{
+  _id: ObjectId
+  
+  time: double
+  
+  first: string
+  
+  last: string
+
+  email: double
+
+  certified: boolean
+
+  hash: string
+
+  salt: string
+}
+```
+<br />
+
+### Profile Schema
+
+```
+{
+  email: string
+  
+  _id: ObjectId
+  
+  user_id: string
+
+  time: double
+
+  description: string
+
+  img: null
+}
+```
+<br />
+
+### Notifications
+```
+{
+  _id: ObjectId
+  
+  info: string
+
+  other_params: null
+
+  user_id: ObjectId
+
+  read: false
+}
+```
+<br />
+
+### Sessions
+```
+{
+  _id: ObjectId
+  
+  user_id: string
+
+  hash: string
+
+  salt: string
+
+  issu_time: double
+}
+```
+<br />
+
+### Buying
+```
+{
+  _id: ObjectId
+  
+  user_id: Int32
+
+  time: Object
+
+  place: string
+
+  price: double
+
+  time_posted: Timestamp
+
+  resloved: boolean
+
+  firstname: string
+
+  lastname: string
+}
+```
+<br />
+
+### Selling
+```
+{
+  _id: ObjectId
+  
+  user_id: Int32
+
+  time: Object
+
+  place: string
+
+  price: double
+
+  time_posted: Timestamp
+
+  resloved: boolean
+
+  firstname: string
+
+  lastname: string
+}
+```
+<br />
+
+### Messages
+```
+{
+  _id: ObjectId
+  
+  sender_id: ObjectId
+
+  recipient_id: ObjectId
+
+  time_sent: Timestamp
+
+  contents: string
+
+  listing_id: ObjectId
+}
+```

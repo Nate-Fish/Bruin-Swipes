@@ -24,6 +24,15 @@ function setup_get_routes (app) {
     // Certify an account (verify their email)
     app.get('/certify', (req, res) => account_routes.certify(req, res));
 
+    // Get all the notifications for this account
+    app.get('/get-notifications', (req, res) => account_routes.get_notifications(req, res));
+
+    // Read all notifications
+    app.get('/read-notifications', (req, res) => account_routes.read_notifications(req, res));
+    
+    // Fetch a profile
+    app.get('/fetch-profile', (req, res) => account_routes.fetch_profile(req,res));
+
     // END ACCOUNT GET ROUTES
 }
 
@@ -41,6 +50,10 @@ function setup_post_routes (app) {
 
     // Get queried results from DB
     app.post('/get-listings', (req, res) => account_routes.get_listings(req, res));
+    //Posts profile
+
+    
+    app.post('/post-profile', (req, res) => account_routes.post_profile(req, res));
 
     // START ACCOUNT GET ROUTES
 }

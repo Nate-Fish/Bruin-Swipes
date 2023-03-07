@@ -14,6 +14,11 @@ let hideNav = Boolean(document.currentScript.getAttribute("data-hideNav"));
 
 // Import Default Scripts/CSS files here
 document.head.append(quickCreate("link", {
+    "rel": "shortcut icon", 
+    "type": "image/png", 
+    "href": "images/favicon_io/favicon-32x32.png",
+}));
+document.head.append(quickCreate("link", {
     "rel": "stylesheet",
     "href": "css/default.css",
 }));
@@ -29,14 +34,12 @@ document.head.append(quickCreate("link", {
  * Draw the navigation at the top of body
  */
 function drawNav() {
-    // TODO: Write these HTML elements into their own files and import from the files
-
     document.body.innerHTML = `<div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="closebtn" onclick='closeNav()'>&times;</a>
-        <a href="#">About</a>
-        <a href="#">Services</a>
-        <a href="#">Clients</a>
-        <a href="#">Contact</a>
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="market.html">Market</a>
+        <a href="messages.html">Messages</a>
         </div>` +
         document.body.innerHTML;
 
@@ -69,7 +72,7 @@ function closeNav() {
  * Every object in the signInQueue is a function that accepts
  * the signedIn object as its parameter.
  * 
- * 
+ * signedIn = {isSignedIn: boolean, name: string};
  */
 let signInQueue = [];
 
@@ -84,13 +87,19 @@ let signInQueue = [];
  *      isSignedIn: {Boolean},
  *      name: {String}
  * }
+ * 
+ * Lastly, this function will propagate any text element on the page
+ * with the class "username" with textContent equal to the
+ * user's first name if they are signed in. It will also hide any
+ * element with the class "sign" if the user is not signedIn.
+ * 
  */
 async function initAccountListeners() {
     // Attempt to sign with verify
     let signedIn = await checkSignedIn();
 
     for (func of signInQueue) {
-        func(signedIn);
+        func(signedIn);//{isSignedIn: false, name: null};
     }
 
     if (hideNav) {
@@ -101,55 +110,41 @@ async function initAccountListeners() {
     let area = getElem('signArea');
 
     if (signedIn.isSignedIn) {
-        area.innerHTML = `<button style="
-        margin-right: 20px;
-        cursor: pointer;
-        " onclick="logout()">Logout</button>
-        
-        <a style="border: 2px solid white;
-        background-color: #2774AE;
-        border-radius: 15px;
-        color: black;
-        padding: 0.3rem 0.8rem;
-        transition: background-color 0.25s;
-        outline: none;
-        cursor: pointer;
-        text-decoration: none;
-        font-size: 18px;
-        " href="profile.html">
-        <i class="fa fa-address-card"></i>  Welcome ` + signedIn.name +`!
+        area.innerHTML = `<button class="bruin-button" onclick="logout()">Logout</button>
+        <a class="bruin-button" href="profile.html">
+        <i class="fa fa-address-card"></i>  Welcome <span class="username"></span>!
         </a>`;
 
         
 
     } else {
-        // TODO - Move this to CSS
-        area.innerHTML = `
-        <a href="sign.html" 
-        onmouseover = "this.style.backgroundColor = 'white';"
-        onmouseout = "this.style.backgroundColor = '#2774AE';"
-        
-        
-        style="border: 2px solid white;
-        background-color: #2774AE;
-        border-radius: 15px;
-        color: black;
-        padding: 0.3rem 0.8rem;
-        transition: background-color 0.25s;
-        outline: none;
-        cursor: pointer;
-        text-decoration: none;
-        font-size: 18px;"
-        >Sign Up / Login</a>
-        `;
+        area.innerHTML = `<a href="sign.html" class="bruin-button">Sign Up / Login</a>`;
     }
+
+
+
+    // Propagate text elements
+    if (signedIn.isSignedIn) {
+        for (let elem of document.getElementsByClassName("username")) {
+            elem.textContent = signedIn.name;
+        }
+        for (let elem of document.getElementsByClassName("email")) {
+            elem.textContent = signedIn.email;
+        }
+    } else { // Hide all sign elements
+        for (let elem of document.getElementsByClassName("sign")) {
+            elem.style.display = "none";
+        }
+    }
+
+
 }
 
 
 // TEMPORARY GLOBAL SIGNED IN FUNCTION
 async function checkSignedIn() {
     let response = await makeRequest('/verify-session'); 
-    return response;//{isSignedIn: false, username: null, data: null};
+    return response;//{isSignedIn: false, name: null};
 }
 
 
@@ -239,3 +234,4 @@ document.addEventListener("DOMContentLoaded", (evt) => {
 
     initAccountListeners();
 });
+
