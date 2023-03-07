@@ -1,0 +1,69 @@
+<!-- This HTML Page is the notification dashboard for the Bruinswipes website. -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>BruinSwipes Notifications</title>
+
+    <script src="js/global.js"></script>
+    <script src="js/notifications.js"></script>
+    <!-- global.js will import the CSS files for default.css -->
+</head>
+
+<body>
+    <div id="wrapper">
+
+        <h1>Notifications Dashboard</h1>
+
+        <style>
+            /* Style the button that is used to open and close the collapsible content */
+            .collapsible {
+                background-color: #eee;
+                color: #444;
+                cursor: pointer;
+                padding: 18px;
+                width: 100%;
+                border: none;
+                text-align: left;
+                outline: none;
+                font-size: 15px;
+                margin-top: 20px;
+            }
+
+            /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+            .active,
+            .collapsible:hover {
+                background-color: #ccc;
+            }
+
+            /* Style the collapsible content. Note: hidden by default */
+            .content {
+                padding: 0 18px;
+                display: none;
+                overflow: hidden;
+                background-color: #f1f1f1;
+            }
+
+            .notification {
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+        </style>
+
+        <button id="read_button">Mark all notifications as read</button>
+
+        <button type="button" class="collapsible">Unread Notifications</button>
+        <div class="content" id="unread">
+            <p>You have no unread notifications.</p>
+        </div>
+
+        <button type="button" class="collapsible">Read Notifications</button>
+        <div class="content" id="read">
+            <p>You have no read notifications.</p>
+        </div>
+    </div>
+</body>
+
+</html>
