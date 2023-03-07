@@ -82,17 +82,44 @@ async function add_data(value, database = "default", collection = "default") {
     return response;
 }
 
+
+// =======================================================================================================================================
+//  DEPRICATED: replaced with a version of get_data that is capable of sorting using default parameters, but functions the same otherwise
+// =======================================================================================================================================
+// /**
+//  * Get all documents that match a query from the database collection.
+//  * Note: provide an empty JSON Object if you would like to get all data.
+//  * 
+//  * @param {JSON} query Use an empty doc to select everything
+//  * @param {String} database
+//  * @param {String} collection
+//  * @return {Array} An array of all documents.
+//  */
+// async function get_data(query = {}, database = "default", collection = "default") {
+//     let response = client.db(database).collection(collection).find(query);
+//     return response.toArray();
+// }
+
+
 /**
- * Get all documents that match a query from the database collection.
+ * Get all documents that match a query from the database collection and sorted according to a order_by and asc
  * Note: provide an empty JSON Object if you would like to get all data.
  * 
  * @param {JSON} query Use an empty doc to select everything
+ * @param {String} order_by - attribute by which to sort the resulting collection
+ * @param {Boolean} asc - boolean value describing whether to sort in ascending or descending order. Default is 1, for ascending order.
  * @param {String} database
  * @param {String} collection
  * @return {Array} An array of all documents.
  */
-async function get_data(query = {}, database = "default", collection = "default") {
-    let response = client.db(database).collection(collection).find(query);
+ async function get_data(query = {}, database = "default", collection = "default", order_by = undefined, asc = 1) {
+    //if order_by is given by the user, sort the collection by the attribute
+    let response = undefined;
+    if(order_by){
+        response = client.db(database).collection(collection).find(query).sort( { order_by: asc ? 1 : -1} );
+    }else{
+        response = client.db(database).collection(collection).find(query);
+    }
     return response.toArray();
 }
 

@@ -5,6 +5,7 @@ const mongo = require('./mongodb-library.js');
 const crypto = require('crypto');
 const fs = require('fs');;
 const { ObjectId } = require('mongodb'); // Necessary to interpret mongodb objectids
+const { query } = require('express');
 
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
@@ -334,6 +335,150 @@ async function certify (user_id, email) {
     }
 }
 
+/**
+ * Unpack req and use its defined values to query the Listings database and return the matches
+ * @param {JSON} req - We expect the query to contain URL parameters such that req = 
+ * {
+ *      locations: [Array, of, locations],
+ *      price_range: {
+ *          price_min: {Number},
+ *          price_max: {Number}
+ *      },
+ *      time_range: {
+ *          time_min: {Timestamp}
+ *          time_max: {Timestamp}
+ *      },
+ *      selling: {Boolean},
+ *      sort: {
+ *          order_by: {String},
+ *          asc: {Boolean} //ascending is assumed unless otherwise specified
+ *      }
+ * }
+ *   
+ *   Returns response, which has the form =
+ * {
+ *      data: {
+ *          results: {Array of documents}
+ *      }
+ * }
+ * 
+ */
+async function query_listings(user_id, req) {
+    //unpack req into query elements
+    let locations = req.body.locations;
+    let price_min = req.body.price_range.price_min;
+    let price_max = req.body.price_range.price_max;
+    let time_min = req.body.time_range.time_min;
+    let time_max = req.body.time_range.time_max;
+    let selling = req.body.selling;
+    let order_by = req.body.sort.order_by;
+    let asc = req.body.sort.asc;
+
+    let response = {data: "No results match your filter. Try broadening your search!"};
+    breakTry: try {
+        // construct a compound query based on req passed
+        let query = { $and: []};
+        results = undefined;
+
+
+        //if locations is nonempty, add each location to the query using the $or operator
+        // we do this since only one location needs to be satisfied for the query to select it
+        if(locations){
+            loc_query = { $or: []};
+            for(let i = 0; i < locations.length; i++){
+                loc_query.$or.push({location: locations[i]});
+            }
+            query.$and.push(loc_query);
+        }
+
+
+
+        //if price_min exists, or if price_min is zero, filter for prices greater than or equal to price_min
+        if(price_min || price_min === 0){
+            query.$and.push({price: { $gte: price_min}});
+        }
+
+
+        //if price_max exists, or if price_max is zero, filter for prices less than or equal to price_max
+        if(price_max || price_min === 0){
+            query.$and.push({price: { $lte: price_max}});
+        }
+
+
+        //if time_min exists, filter for times greater than or equal to time_min
+        if(time_min){
+            query.$and.push({price: { $gte: time_min}});
+        }
+
+
+        //if time_max exists, filter for times greater than or equal to time_max
+        if(time_min){
+            query.$and.push({price: { $lte: time_max}});
+        }
+
+
+        //if selling is undefined, show both selling and buying by perfoming no additional filter
+        if(selling === undefined){
+            //do nothing since selling is undefined
+            //empty code block for ease of reading
+        }else if(selling){
+            //if selling is true, filter for the selling flag
+            query.$and.push({selling: true});
+        }else{
+            //if selling is false, filter for documents without the selling flag
+            query.$and.push({selling: false});
+        }
+
+
+        //finally, only search through all documents which have not been resolved yet
+        //a resolved listing is one where the poster has already sold the swipe, or the time window has expired
+        query.$and.push({resolved: false});
+
+
+        //if order_by exists, sort the results based on the given attribute
+        if(order_by){
+            results = await mongo.get_data(query, "Listings", "listings", order_by, asc);
+        }else{
+            //if order_by is undefined, don't sort
+            results = await mongo.get_data(query, "Listings", "listings");
+        }
+
+        if (results.length == 0) {
+            break breakTry;
+        }
+        response.data = results;
+    } catch (error) {} // error handling if needed
+
+    return response;
+}
+
+/**
+ * Write data as a document in the specified Database and Collection in MongoDB
+ * @param {JSON} data - We expect data to have the form = 
+ * {
+ *      locations: {String},
+ *      price: {Number}
+ *      time: {Timestamp}
+ *      time_posted: {Timestamp},
+ *      resolved: {Boolean}
+ *      selling: {Boolean},
+ * }
+ * @param {String} user_id - We expect user_id to represent a unique document in Accounts.accounts collection
+ */
+async function insert_listing(user_id, req) {
+    //grab the user_id, first, and last names from the user_id given and store it in user JSON
+    let user_data = (await mongo.get_data({"_id": new ObjectId(user_id)}, "Accounts", "accounts"))[0];
+    let user = {
+        user_id: user_data._id,
+        firstname: user_data.first,
+        lastname: user_data.last
+    };
+    let listing = req.body;
+    listing["user"] = user;
+    let response = await mongo.add_data(listing, database = "Listings", collection = "listings");
+}
+
+
 module.exports = {
-    sign_up, login, get_account_name, issue_session, verify_session, certify
+    sign_up, login, get_account_name, issue_session, verify_session, certify, query_listings, insert_listing
 }

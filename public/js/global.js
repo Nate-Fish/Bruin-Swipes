@@ -207,7 +207,7 @@ async function makeRequest(route, body = null) {
             'Content-Type': "application/json"
         },
     };
-    if (body != null) {
+    if (body !== null) {
         options.method = 'POST';
         options.body = JSON.stringify(body)
     }
