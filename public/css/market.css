@@ -1,0 +1,41 @@
+/* Market stuff */
+/* SinglePriceComponent */
+.selected-buy {
+    box-shadow: 5px 5px 10px 2px rgba(0, 0, 0, .8);
+    background-color: #d8f2df;
+}
+
+.not-selected-buy {
+    background-color: #96a89b;
+}
+
+.centered {
+    text-align: center;
+}
+
+.element_centered {
+    margin: auto;
+    text-align: center;
+}
+
+/* Test */
+.div_class {
+    display: flex;
+    justify-content: space-between;
+    max-width: 200px;
+    margin: 0 auto;
+    padding: 10px 0;
+}
+
+.temp {
+    display: flex;
+    justify-content: center;
+    max-width: 200px;
+    margin: 0 auto;
+    padding: 0;
+    /* align-items: center; */
+}
+
+.margin {
+    padding: 30px;
+}

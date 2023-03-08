@@ -15,8 +15,8 @@ h1 {
 }
 
 .logo {
-  width: 400px;
-  height: 350px;
+  width: 320px;
+  height: 280px;
   animation: fadeInAnimation ease 6s;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;

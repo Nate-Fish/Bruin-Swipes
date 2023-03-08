@@ -97,6 +97,26 @@ async function get_data(query = {}, database = "default", collection = "default"
 }
 
 /**
+ * Get a single doc that matches the given query and return solely the key
+ * value pairs for the keys that exist in the given parameters array.
+ * 
+ * @param {JSON} query 
+ * @param {Array} params An array of what keys to project, empty if all parameters requested
+ * @param {String} database 
+ * @param {String} collection 
+ * @returns {JSON|null} A JSON object if a match was found, null otherwise  
+ */
+async function get_doc(query = {}, database = "default", collection = "default", params = []) {
+    let response = await client.db(database).collection(collection).findOne(query);
+    if (response == null) {
+        return null;
+    }
+    let answer = {};
+    params.forEach((param) => answer[param] = response[param]);
+    return params.length != 0 ? answer : response;
+}
+
+/**
  * Get all documents for a provided limit from a database collection sorted in the
  * order provided.
  * @param {JSON} query 
@@ -148,7 +168,7 @@ async function delete_docs_q(query, database = "default", collection = "default"
  * @param {JSON} update For example {$inc: num} (Increments num field in the doc)
  * @param {String} database 
  * @param {String} collection 
- * @returns {DeleteResult}
+ * @returns {UpdateResult}
  */
  async function update_docs(filter, update, database = "default", collection = "default") {
     let response = await client.db(database).collection(collection).updateMany(filter, update);
@@ -157,5 +177,5 @@ async function delete_docs_q(query, database = "default", collection = "default"
 
 module.exports = {
     client, isConnected:false, connectClient, closeClient, add_data, get_data, delete_doc_id,
-    delete_docs_q, update_docs, get_data_paged
+    delete_docs_q, update_docs, get_data_paged, get_doc
 };
