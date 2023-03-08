@@ -344,7 +344,6 @@ async function post_listing(req, res) {
         res.send(response);
     }
     
-    console.log(verify_response["user_id"]);
     await accounts.insert_listing(verify_response["user_id"], req);
     res.send({"status": "success"});
 }

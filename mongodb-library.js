@@ -116,7 +116,8 @@ async function add_data(value, database = "default", collection = "default") {
     //if order_by is given by the user, sort the collection by the attribute
     let response = undefined;
     if(order_by){
-        response = client.db(database).collection(collection).find(query).sort( { order_by: asc ? 1 : -1} );
+        console.log("Sanity check: ", { order_by: (asc ? 1 : -1) })
+        response = client.db(database).collection(collection).find(query).sort( { [order_by]: (asc ? 1 : -1) } );
     }else{
         response = client.db(database).collection(collection).find(query);
     }

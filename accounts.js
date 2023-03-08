@@ -380,6 +380,16 @@ async function query_listings(user_id, req) {
     let order_by = req.body.sort.order_by;
     let asc = req.body.sort.asc;
 
+    console.log("Query received ->");
+    console.log("locations: ", locations);
+    console.log("price_min: ", price_min);
+    console.log("price_max: ", price_max);
+    console.log("time_min: ", time_min);
+    console.log("time_max: ", time_max);
+    console.log("selling: ", selling);
+    console.log("order_by: ", order_by);
+    console.log("asc: ", asc);
+
     let response = {data: "No results match your filter. Try broadening your search!"};
     breakTry: try {
         // construct a compound query based on req passed
@@ -389,37 +399,38 @@ async function query_listings(user_id, req) {
 
         //if locations is nonempty, add each location to the query using the $or operator
         // we do this since only one location needs to be satisfied for the query to select it
-        if(locations){
+        if(locations.length){
             loc_query = { $or: []};
             for(let i = 0; i < locations.length; i++){
                 loc_query.$or.push({location: locations[i]});
             }
+            console.log("Locations query: ", loc_query);
             query.$and.push(loc_query);
         }
 
 
 
         //if price_min exists, or if price_min is zero, filter for prices greater than or equal to price_min
-        if(price_min || price_min === 0){
+        if(price_min !== undefined){
             query.$and.push({price: { $gte: price_min}});
         }
 
 
         //if price_max exists, or if price_max is zero, filter for prices less than or equal to price_max
-        if(price_max || price_min === 0){
+        if(price_max !== undefined){
             query.$and.push({price: { $lte: price_max}});
         }
 
 
         //if time_min exists, filter for times greater than or equal to time_min
-        if(time_min){
-            query.$and.push({price: { $gte: time_min}});
+        if(time_min !== undefined){
+            query.$and.push({time: { $gte: time_min}});
         }
 
 
         //if time_max exists, filter for times greater than or equal to time_max
-        if(time_min){
-            query.$and.push({price: { $lte: time_max}});
+        if(time_max !== undefined){
+            query.$and.push({time: { $lte: time_max}});
         }
 
 
@@ -440,21 +451,24 @@ async function query_listings(user_id, req) {
         //a resolved listing is one where the poster has already sold the swipe, or the time window has expired
         query.$and.push({resolved: false});
 
+        console.log("Submitted Query: ", query);
+
 
         //if order_by exists, sort the results based on the given attribute
-        if(order_by){
+        if(order_by !== undefined){
+            console.log("Ordered query");
             results = await mongo.get_data(query, "Listings", "listings", order_by, asc);
         }else{
             //if order_by is undefined, don't sort
             results = await mongo.get_data(query, "Listings", "listings");
         }
 
-        if (results.length == 0) {
+        if (results.length === 0) {
             break breakTry;
         }
         response.data = results;
     } catch (error) {} // error handling if needed
-
+    console.log("Response: ", response);
     return response;
 }
 

@@ -1,4 +1,5 @@
 'use strict';
+
 // import { useState } from React;
 // import button from "material-ui";
 // import Button from '@material-ui/core/Button';
@@ -29,86 +30,101 @@ function generateData(){
 }
 
 
-function BuyButton({ buy, callback }){
+function BuyButton({ buy, callback, update_query }){
     function handleClickBuy() {
         if(buy === undefined || !buy){
-            console.log("filter by people selling");
             callback(true);
+            update_query({showBuys: true});
         }else{
-            console.log("drop buy/sell filter");
             callback(undefined);
+            update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickBuy} className="element_centered">Buy</button>
+    return <button onClick={handleClickBuy} className="button-7">Buy</button>
 }
 
-function SellButton({ buy, callback }){
+function SellButton({ buy, callback, update_query }){
     function handleClickSell() {
         if(buy === undefined || buy){
-            console.log("filter by people buying");
             callback(false);
+            update_query({showBuys: false});
         }else{
-            console.log("drop buy/sell filter");
             callback(undefined);
+            update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickSell} className="element_centered">Sell</button>
+    return <button onClick={handleClickSell} className="button-7">Sell</button>
 }
 
 function FilterButton({ callback }){
     function handleClickFilter() {
-        console.log("filter")
         callback()
     }
-    return <button onClick={handleClickFilter} className="element_centered">Filter</button>
+    return <button onClick={handleClickFilter} className="button-7">Filter</button>
 }
 
 function CreateListingButton({ callback }){
     function handleClickListing() {
-        console.log("Listing")
         callback()
     }
-    return <button onClick={handleClickListing} className="element_centered">Listing</button>
+    return <button onClick={handleClickListing} className="button-7">Listing</button>
 }
 
 // Component that holds all the filters
-function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLowerPrice, upperPrice, setUpperPrice, startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter }){   
+function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLowerPrice, upperPrice, setUpperPrice, startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter, update_query }){   
 
     return <div className="temp">
-        <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations}/>
-        <PriceComponent lowerPrice={lowerPrice} upperPrice={upperPrice} setLowerPrice={setLowerPrice} setUpperPrice={setUpperPrice}/>
-        {/* <FilterTimeComponent callback={timeChangeCallback}/> */}
-        <FilterTimeComponent startTimeFilter={startTimeFilter} setStartTimeFilter={setStartTimeFilter} endTimeFilter={endTimeFilter} setEndTimeFilter={setEndTimeFilter}/>
+        <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/>
+        <PriceComponent lowerPrice={lowerPrice} upperPrice={upperPrice} setLowerPrice={setLowerPrice} setUpperPrice={setUpperPrice} update_query={update_query}/>
+        <FilterTimeComponent startTimeFilter={startTimeFilter} setStartTimeFilter={setStartTimeFilter} endTimeFilter={endTimeFilter} setEndTimeFilter={setEndTimeFilter} update_query={update_query}/>
     </div>
 }
 
 // Time part of the filter component
-function FilterTimeComponent({ startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter }){
+function FilterTimeComponent({ startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter, update_query }){
     const [timeErrorMsg, setTimeErrorMsg] = React.useState('');
     const [startTime, setStartTime] = React.useState(startTimeFilter);
     const [endTime, setEndTime] = React.useState(endTimeFilter);
 
     function handleStartTimeChange(time){
         setStartTime(time);
-        if(endTime === undefined || time.localeCompare(endTime) !== 1){
-            setStartTimeFilter(time);
+        if(time){
+            if(endTime === undefined || time.localeCompare(endTime) !== 1){
+                setStartTimeFilter(time);
+                setEndTimeFilter(endTime); 
+                setTimeErrorMsg("");
+                update_query({time_min: time, time_max: endTime});
+            }else{
+                setTimeErrorMsg("Error. Start time cannot be after end time.");
+            }
+        }else{
+            setStartTimeFilter(undefined);
+            setStartTime(undefined);
             setEndTimeFilter(endTime); 
             setTimeErrorMsg("");
-        }else{
-            setTimeErrorMsg("Error. Start time cannot be after end time.");
+            update_query({time_min: "undefined", time_max: endTime});
         }
+
 
     }
     function handleEndTimeChange(time){
         setEndTime(time);
-        if(startTime === undefined || time.localeCompare(startTime) !== -1){
-            setStartTimeFilter(startTime);
-            setEndTimeFilter(time); 
-            setTimeErrorMsg("");
+        if(time){
+            if(startTime === undefined || time.localeCompare(startTime) !== -1){
+                setStartTimeFilter(startTime);
+                setEndTimeFilter(time); 
+                setTimeErrorMsg("");
+                update_query({time_min: startTime, time_max: time});
+            }else{
+                setTimeErrorMsg("Error. Start time cannot be after end time.");
+            }
         }else{
-            setTimeErrorMsg("Error. Start time cannot be after end time.");
+            setStartTimeFilter(startTime);
+            setEndTimeFilter(undefined);
+            setEndTime(undefined); 
+            setTimeErrorMsg("");
+            update_query({time_min: startTime, time_max: "undefined"});
         }
-
     }
 
     return (
@@ -139,7 +155,7 @@ function FilterTimeComponent({ startTimeFilter, setStartTimeFilter, endTimeFilte
 }
 
 // Price component for filters
-function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice }){
+function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice, update_query }){
     const [priceErrorMsg, setPriceErrorMsg] = React.useState('');
     const [upperInput, setUpperInput] = React.useState(upperPrice);
     const [lowerInput, setLowerInput] = React.useState(lowerPrice);
@@ -156,6 +172,7 @@ function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice }
                     setUpperPrice(value);
                     setLowerPrice(lowerInput);
                     handlePriceError('');
+                    update_query({price_max: value, price_min: lowerInput});
                 }else{
                     handlePriceError("Error, prices cannot be negative.");
                 }
@@ -175,6 +192,7 @@ function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice }
                     setUpperPrice(upperInput);
                     setLowerPrice(value);
                     handlePriceError('');
+                    update_query({price_max: upperInput, price_min: value});
                 }else{
                     handlePriceError("Error, prices cannot exceed $100.");
                 }
@@ -226,9 +244,6 @@ function TimeBar({ callback, content, time }){
             <label>
                 {content}
                 <input type="datetime-local" defaultValue={time} onChange={(e) => {
-                    console.log(e)
-                    console.log(e.target.value)
-                    console.log(typeof e.target.value)
                     setDate(e.target.value)
                     callback(e.target.value)
                 }}/>
@@ -287,21 +302,21 @@ function SearchBar({ searchCallback }){
 }
 
 
-function map_data(){
+function map_data(all_data){
     return(
         all_data.map((vals, i) => {
         return (<tr key={i}>
             <td>
-                {vals[0]}
+                {vals["location"]}
             </td>
             <td>
-                {vals[1]}
+                {vals["time"]}
             </td>
             <td>
-                {vals[2]}
+                {vals["price"]}
             </td>
             <td>
-                {vals[3] ? "Buy" : "Sell"}
+                {vals["selling"] ? "Buy" : "Sell"}
             </td>
         </tr>)
     })
@@ -310,36 +325,69 @@ function map_data(){
 
 // Table that holds the actual listing data
 // The data comes from all_data array
-function Grid({}){
+function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
 
-    let rows = map_data();
-    console.log(rows);
+    const [firstRendered, setFirstRendered] = React.useState(true);
 
-    return <table>
-        <thead>
-            <tr>
-                <th>
-                    Location
-                </th>
-                <th>
-                    Date
-                </th>
-                <th>
-                    Price
-                </th>
-                <th>
-                    Buy/Sell
-                </th>
-            </tr>
-        </thead>
-        <tbody>
-            {rows}
-        </tbody>
-    </table>
+    if(firstRendered){
+        setFirstRendered(false);
+        update_query();
+    }
+
+    //console.log("All data: ", all_data);
+    if(Array.isArray(all_data)){
+    
+        function handleClick(sort){
+            console.log("sortKey in handleClick: ", sortKey);
+            console.log("asc in handleClick: ", asc);
+            console.log("sort in handleClick: ", sort);
+            console.log("Sanity check: ", sortKey === sort);
+            console.log("Sanity check: ", asc !== undefined);
+            console.log("Sanity check: ", asc === false);
+            if(sortKey === sort && asc !== undefined && asc === true){
+                setAsc(false);
+                update_query({asc: false});
+            }else if (sortKey === sort && asc !== undefined && asc === false){
+                setSortKey(undefined);
+                setAsc(undefined);
+                update_query({sortKey: "undefined", asc: "undefined"});
+                console.log("PLEASE FOR THE LOVE OF GOD: ", {sortKey: "undefined", asc: "undefined"});
+            }else{
+                setSortKey(sort);
+                setAsc(true);
+                update_query({sortKey: sort, asc: true});
+
+            }
+        }
+    
+        return <table>
+            <thead>
+                <tr>
+                    <th onClick={() => handleClick("location")}>
+                        Location
+                    </th>
+                    <th onClick={() => handleClick("time")}>
+                        Date
+                    </th>
+                    <th onClick={() => handleClick("price")}>
+                        Price
+                    </th>
+                    <th>
+                        Buy/Sell
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {map_data(all_data)}
+            </tbody>
+        </table>
+    }else{
+        return <></>
+    } 
 }
 
 // Component to get location for filter and popup
-function LocationComponent({ filteredLocations, setFilteredLocations, isCreate = false, error = ""}){
+function LocationComponent({ filteredLocations, setFilteredLocations, update_query, isCreate = false, error = ""}){
     // Change default from constant value thing to db call
     const [allLocations, setAllLocation] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
     const [locations, setLocations] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
@@ -358,8 +406,8 @@ function LocationComponent({ filteredLocations, setFilteredLocations, isCreate =
         let ind = checkIn(loc)
         if (ind !== -1) copy.splice(ind, 1);
         else copy.push(loc)
-        console.log(copy)
         setFilteredLocations(copy)
+        update_query({locations: copy});
     }
     function addAll(){
         let temp = []
@@ -367,6 +415,7 @@ function LocationComponent({ filteredLocations, setFilteredLocations, isCreate =
             temp.push(locations[j])
         }
         setFilteredLocations(temp)
+        update_query({locations: temp});
     }
     function checkIn(loc){
         for (let j = 0; j < filteredLocations.length; j++){
@@ -396,6 +445,7 @@ function LocationComponent({ filteredLocations, setFilteredLocations, isCreate =
         }
         setFilteredLocations(filteredCopy)
         setLocations(curr)
+        update_query({locations: curr});
         
     }
 
@@ -410,7 +460,7 @@ function LocationComponent({ filteredLocations, setFilteredLocations, isCreate =
             <tr>
                 <td>
                     <button onClick={addAll}>Select All</button>
-                    <button onClick={() => {setFilteredLocations([])}}>Unselect All</button>
+                    <button onClick={() => {setFilteredLocations([]); update_query({locations: []});}}>Unselect All</button>
                 </td>
             </tr>
             : <></>}
@@ -530,7 +580,6 @@ function Popup({ handleClose }){
     ]
 
     function nextClicked(){
-        console.log(locs)
         if (stage == 0 && locs.length != 1) 
             setLocError('Select a location')
         else if(stage == 1){
@@ -545,7 +594,6 @@ function Popup({ handleClose }){
         else{
             // Add db call to actually make new listing here
             // RN it just puts it in all_data
-            console.log("made a new listing swag")
             all_data.push([locs[0], time, price, isBuy])
             handleClose()
         }
@@ -584,70 +632,86 @@ function Popup({ handleClose }){
 }
 
 // Functions used for testing purposes
-// function Ophir(){
-//     async function callback(){
-//         let body = {
-//             location: "Test",
-//             time: "Was",
-//             price: "Here",
-//             time_posted: "This",
-//             resolved: false,
-//             selling: "Proof",
-//         };
-//         console.log(await makeRequest('/post-listing', body));
-//     }
-//     return (<>
-//         Click to insert to DB
-//         <button onClick={callback}>
-//             CLICK ME!
-//         </button>
-//     </>);
-// }
+function Ophir(){
+    async function callback(){
+        let body = {
+            location: "Rendezvous",
+            time: "2023-03-10T14:05",
+            price: 10,
+            time_posted: "2023-03-8T14:05",
+            resolved: false,
+            selling: true,
+        };
+        makeRequest('/post-listing', body);
+    }
+    return (<>
+        Click to insert to DB
+        <button onClick={callback}>
+            CLICK ME!
+        </button>
+    </>);
+}
 
-// function Ophir2({func}){
-//     async function callback(){
-//         let body = {
-//             locations: undefined,
-//             price_range: {
-//                 price_min: undefined,
-//                 price_max: undefined
-//             },
-//             time_range: {
-//                 time_min: undefined,
-//                 time_max: undefined
-//             },
-//             selling: undefined,
-//             sort: {
-//                 order_by: undefined,
-//                 asc: undefined
-//             }
-//         };
-//         func(await makeRequest('/get-listings', body));
+function Ophir2({func}){
+    async function callback(){
+        let body = {
+            locations: undefined,
+            price_range: {
+                price_min: undefined,
+                price_max: undefined
+            },
+            time_range: {
+                time_min: undefined,
+                time_max: undefined
+            },
+            selling: undefined,
+            sort: {
+                order_by: undefined,
+                asc: undefined
+            }
+        };
+        func(await makeRequest('/get-listings', body));
 
-//     }
-//     return (<>
-//         Click to get listings
-//         <button onClick={callback}>
-//             {all_data}
-//         </button>
-//     </>);
-// }
+    }
+    return (<>
+        Click to get listings
+        <button onClick={callback}>
+            {all_data}
+        </button>
+    </>);
+}
 
-// function Combine_states({ filteredLocations, lowerPrice, upperPrice, showBuys, startTimeFilter, endTimeFilter }){
-//     function show_states(){
-//         console.log("filteredLocations: ", filteredLocations);
-//         console.log("lowerPrice: ", lowerPrice);
-//         console.log("upperPrice: ", upperPrice);
-//         console.log("showBuys: ", showBuys);
-//         console.log("startTimeFilter: ", startTimeFilter);
-//         console.log("endTimeFilter: ", endTimeFilter);
-//     }
-//     return (<>
-//         <button onClick={show_states}>
-//             click me to log all states!
-//         </button>
-//     </>);
-// }
+function Combine_states({ filteredLocations, lowerPrice, upperPrice, showBuys, startTimeFilter, endTimeFilter, sortKey, asc }){
+    function show_states(){
+        console.log("filteredLocations: ", filteredLocations);
+        console.log("lowerPrice: ", lowerPrice);
+        console.log("upperPrice: ", upperPrice);
+        console.log("showBuys: ", showBuys);
+        console.log("startTimeFilter: ", startTimeFilter);
+        console.log("endTimeFilter: ", endTimeFilter);
+        console.log("sortKey: ", sortKey);
+        console.log("asc: ", asc);
+    }
+    return (<>
+        <button onClick={show_states}>
+            click me to log all states!
+        </button>
+    </>);
+}
+
+function Display_data({ all_data }){
+    function show_data(){
+        console.log("All data: ", all_data);
+    }
+    return (<>
+        <button onClick={show_data}>
+            log data
+        </button>
+    </>);
+}
+
+
+
 
 // main compoenent that holds everything
 // All filters come back here, so probably get data from db here and pass filters here as well
@@ -665,14 +729,94 @@ function main(){
     const [showBuys, setShowBuys] = React.useState(undefined)
     const [startTimeFilter, setStartTimeFilter] = React.useState(undefined)
     const [endTimeFilter, setEndTimeFilter] = React.useState(undefined)
+    const [sortKey, setSortKey] = React.useState(undefined);
+    const [asc, setAsc] = React.useState(undefined);
 
-    //keep state of queried results
-    const [all_data, setAllData] = React.useState([])
+    //keep state of the table display parameters
+    const [all_data, setAllData] = React.useState([]);
+    const [index, setIndex] = React.useState(0);
+
+
+    async function update_query(recentlySet={}){
+        let body = {
+            locations: filteredLocations,
+            price_range: {
+                price_min: lowerPrice,
+                price_max: upperPrice
+            },
+            time_range: {
+                time_min: startTimeFilter,
+                time_max: endTimeFilter
+            },
+            selling: showBuys,
+            sort: {
+                order_by: sortKey,
+                asc: asc
+            }
+        };
+        if(recentlySet["locations"] !== undefined && recentlySet["locations"] !== "undefined"){
+            body["locations"] = recentlySet["locations"]
+        }else if(recentlySet["locations"] === "undefined"){
+            body["locations"] = undefined
+        }
+        if(recentlySet["price_min"] !== undefined && recentlySet["price_min"] !== "undefined"){
+            body.price_range["price_min"] = recentlySet["price_min"]
+        }else if(recentlySet["price_min"] === "undefined"){
+            body.price_range["price_min"] = undefined
+        }
+        if(recentlySet["price_max"] !== undefined && recentlySet["price_max"] !== "undefined"){
+            body.price_range["price_max"] = recentlySet["price_max"]
+        }else if(recentlySet["price_max"] === "undefined"){
+            body.price_range["price_max"] = undefined
+        }
+        if(recentlySet["time_min"] !== undefined && recentlySet["time_min"] !== "undefined"){
+            body.time_range["time_min"] = recentlySet["time_min"]
+        }else if(recentlySet["time_min"] === "undefined"){
+            body.time_range["time_min"] = undefined
+        }
+        if(recentlySet["time_max"] !== undefined && recentlySet["time_max"] !== "undefined"){
+            body.time_range["time_max"] = recentlySet["time_max"]
+        }else if(recentlySet["time_max"] === "undefined"){
+            body.time_range["loctime_maxations"] = undefined
+        }
+        if(recentlySet["showBuys"] !== undefined && recentlySet["showBuys"] !== "undefined"){
+            body["showBuys"] = recentlySet["showBuys"]
+        }else if(recentlySet["showBuys"] === "undefined"){
+            body["showBuys"] = undefined
+        }
+        console.log("recentlySet[sortKey]: ", recentlySet["sortKey"]);
+        if(recentlySet["sortKey"] !== undefined && recentlySet["sortKey"] !== "undefined"){
+            console.log("recentlySet[sortKey]: ", recentlySet["sortKey"]);
+            body.sort["order_by"] = recentlySet["sortKey"]
+        }else if(recentlySet["sortKey"] === "undefined"){
+            body.sort["order_by"] = undefined
+        }
+        if(recentlySet["asc"] !== undefined && recentlySet["asc"] !== "undefined"){
+            body.sort["asc"] = recentlySet["asc"]
+        }else if(recentlySet["asc"] === "undefined"){
+            body.sort["asc"] = undefined
+        }
+        if(recentlySet["showBuys"] !== undefined && recentlySet["showBuys"] !== "undefined"){
+            body["selling"] = recentlySet["showBuys"]
+        }else if(recentlySet["showBuys"] === "undefined"){
+            body["selling"] = undefined
+        }
+        console.log("Body being sent: ", body);
+        let response = (await makeRequest('/get-listings', body)).data;
+        if(Array.isArray(response)){
+             setAllData(response);
+        }else{
+            setAllData([]);
+        }
+    }
+
+
+
 
     return <>
         <div className="div_class">
-            <BuyButton buy={showBuys} callback={setShowBuys}/>
-            <SellButton buy={showBuys} callback={setShowBuys}/>
+            <BuyButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
+            <SellButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
         </div>
         <div className="div_class">
             <>
@@ -692,24 +836,23 @@ function main(){
             setStartTimeFilter={setStartTimeFilter}
             endTimeFilter={endTimeFilter}
             setEndTimeFilter={setEndTimeFilter}
-            // timeChangeCallback={(t1, t2) => {
-            //     setStartTimeFilter(t1)
-            //     setEndTimeFilter(t2)
-            // }}
-            /> : <></>}
+            update_query={update_query}/> : <></>}
         </div>
         <div>
             {showPopup ? <Popup content="Some text" handleClose={() => setShowPopup(!showPopup)}/> : <></>}
         </div>
         <div>
-            <Grid />
+            <Grid sortKey={sortKey} setSortKey={setSortKey} asc={asc} setAsc={setAsc} all_data={all_data} update_query={update_query}/>
         </div>
-        {/* Components used for testing purposes
+        {/* Components used for testing purposes */}
         <Ophir></Ophir>
-        <Ophir2 func={setAllData}>all_data</Ophir2>
-        <Combine_states filteredLocations={filteredLocations} lowerPrice={lowerPrice} upperPrice={upperPrice} showBuys={showBuys} startTimeFilter={startTimeFilter} endTimeFilter={endTimeFilter}>
+        {/* <Ophir2 func={setAllData}>all_data</Ophir2> */}
+        <Combine_states filteredLocations={filteredLocations} lowerPrice={lowerPrice} upperPrice={upperPrice} showBuys={showBuys} startTimeFilter={startTimeFilter} endTimeFilter={endTimeFilter} sortKey={sortKey} asc={asc}>
             test
-        </Combine_states> */}
+        </Combine_states>
+        <Display_data all_data={all_data}>
+            log data
+        </Display_data>
     </>
 }
 
