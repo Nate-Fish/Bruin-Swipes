@@ -7,26 +7,30 @@
 // const button = window["MaterialUI"]
 
 
-let locs = ['rende', 'epic', 'bplate', 'de neve', 'the drey', 'rende east :(', 'epicuria', 'study']
-let times = ['2023-02-22T12:12', '2023-02-03T12:12', '2023-02-07T12:15']
-let prices = [1, 2, 3, 5, 6, 76, 12, 14]
-let all_data = []
+let locs = ['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman'];
+let times = ['2023-02-22T12:12', '2023-02-03T12:12', '2023-02-07T12:15', '2023-03-02T12:15', '2023-04-30T12:15'];
+let prices = [1, 2, 3, 4, 5];
+let buy = [true, false];
 
 // Generate template data
-function generateData(){
-    let counter = 0
-    let buy = true
-    for (let i = 0; i < locs.length; i++){
-        for (let j = 0; j < times.length; j++){
-            for (let p = 0; p < prices.length; p++){
-                if (counter > 10) return;
-                all_data.push([locs[i], times[j], prices[p], buy])
-                buy = !buy
-                counter++;
+function populate_sample_data(){
+    for(let i = 0; i < locs.length; i++){
+        for(let j = 0; j < times.length; j++){
+            for(let k = 0; k < prices.length; k++){
+                for(let l = 0; l < buy.length; l++){
+                    let body = {
+                        location: locs[i],
+                        time: times[j],
+                        price: prices[k],
+                        time_posted: "2023-03-8T14:05",
+                        resolved: false,
+                        selling: buy[l]
+                    };
+                    makeRequest('/post-listing', body);
+                }
             }
         }
     }
-
 }
 
 
@@ -301,22 +305,78 @@ function SearchBar({ searchCallback }){
     </form>
 }
 
+function unpack_date(date){
+    let year = Number(date.slice(0, 4));
+    let month = Number(date.slice(5, 7));
+    let day = Number(date.slice(8, 10));
+    let hour = Number(date.slice(11, 13));
+    let minute = date.slice(14, 16);
+    let am = true;
+    if(hour >= 12){
+        am = false;
+    }
+    if(hour > 12){
+        hour = hour - 12;
+    }
+    if(hour < 10){
+        hour = "0" + hour;
+    }
+    if(month == 1){
+        month = "January";
+    }else if(month == 2){
+        month = "Febraury";
+    }else if(month == 3){
+        month = "March";
+    }else if(month == 4){
+        month = "April";
+    }else if(month == 5){
+        month = "May";
+    }else if(month == 6){
+        month = "June";
+    }else if(month == 7){
+        month = "July";
+    }else if(month == 8){
+        month = "August";
+    }else if(month == 9){
+        month = "September";
+    }else if(month == 10){
+        month = "October";
+    }else if(month == 11){
+        month = "November";
+    }else{
+        month = "December";
+    }
+    let combined_date = hour + ":" + minute + " " + (am ? "AM":"PM") + ", " + month + " " + day + ", " + year;
+    return combined_date;
+}
 
-function map_data(all_data){
+
+function map_data(all_data, index){
+    let lowerBound = index*50;
+    let upperBound = all_data.length >= 50*(index+1) ? 50*(index+1) : all_data.length;
+    let all_data_copy = all_data.slice(lowerBound, upperBound);
     return(
-        all_data.map((vals, i) => {
+        all_data_copy.map((vals, i) => {
         return (<tr key={i}>
             <td>
                 {vals["location"]}
             </td>
             <td>
-                {vals["time"]}
+                {unpack_date(vals["time"])}
             </td>
             <td>
-                {vals["price"]}
+                {"$" + vals["price"] + ".00"}
             </td>
             <td>
-                {vals["selling"] ? "Buy" : "Sell"}
+                {vals.user.firstname + " " + vals.user.lastname}
+            </td>
+            <td>
+                {vals["selling"] ? "Selling" : "Buying"}
+            </td>
+            <td>
+                <button>
+                    Insert message block
+                </button>
             </td>
         </tr>)
     })
@@ -325,7 +385,7 @@ function map_data(all_data){
 
 // Table that holds the actual listing data
 // The data comes from all_data array
-function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
+function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index, setIndex }){
 
     const [firstRendered, setFirstRendered] = React.useState(true);
 
@@ -338,12 +398,6 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
     if(Array.isArray(all_data)){
     
         function handleClick(sort){
-            console.log("sortKey in handleClick: ", sortKey);
-            console.log("asc in handleClick: ", asc);
-            console.log("sort in handleClick: ", sort);
-            console.log("Sanity check: ", sortKey === sort);
-            console.log("Sanity check: ", asc !== undefined);
-            console.log("Sanity check: ", asc === false);
             if(sortKey === sort && asc !== undefined && asc === true){
                 setAsc(false);
                 update_query({asc: false});
@@ -351,7 +405,6 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
                 setSortKey(undefined);
                 setAsc(undefined);
                 update_query({sortKey: "undefined", asc: "undefined"});
-                console.log("PLEASE FOR THE LOVE OF GOD: ", {sortKey: "undefined", asc: "undefined"});
             }else{
                 setSortKey(sort);
                 setAsc(true);
@@ -360,7 +413,7 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
             }
         }
     
-        return <table>
+        return (<><table>
             <thead>
                 <tr>
                     <th onClick={() => handleClick("location")}>
@@ -373,14 +426,41 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query }){
                         Price
                     </th>
                     <th>
+                        Name
+                    </th>
+                    <th>
                         Buy/Sell
+                    </th>
+                    <th>
                     </th>
                 </tr>
             </thead>
             <tbody>
-                {map_data(all_data)}
+                {map_data(all_data, index)}
             </tbody>
         </table>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <button onClick={() => {
+                            if (index > 0) setIndex(index - 1);
+                            }}>Previous
+                        </button>
+                    </td>
+                    <td>
+                        <p>{(all_data.length ? (index*50 + 1) : 0) + " - " + ((index + 1)*50 < all_data.length ? (index + 1)*50 : all_data.length)}</p>
+                    </td>
+                    <td>
+                        <button onClick={() => {
+                            if ((index + 1)*50 < all_data.length) setIndex(index + 1);
+                            }}>Next
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        </>)
     }else{
         return <></>
     } 
@@ -652,34 +732,6 @@ function Ophir(){
     </>);
 }
 
-function Ophir2({func}){
-    async function callback(){
-        let body = {
-            locations: undefined,
-            price_range: {
-                price_min: undefined,
-                price_max: undefined
-            },
-            time_range: {
-                time_min: undefined,
-                time_max: undefined
-            },
-            selling: undefined,
-            sort: {
-                order_by: undefined,
-                asc: undefined
-            }
-        };
-        func(await makeRequest('/get-listings', body));
-
-    }
-    return (<>
-        Click to get listings
-        <button onClick={callback}>
-            {all_data}
-        </button>
-    </>);
-}
 
 function Combine_states({ filteredLocations, lowerPrice, upperPrice, showBuys, startTimeFilter, endTimeFilter, sortKey, asc }){
     function show_states(){
@@ -706,6 +758,14 @@ function Display_data({ all_data }){
     return (<>
         <button onClick={show_data}>
             log data
+        </button>
+    </>);
+}
+
+function Populate_data(){
+    return (<>
+        <button onClick={populate_sample_data}>
+            populate tf outta the DB
         </button>
     </>);
 }
@@ -784,9 +844,7 @@ function main(){
         }else if(recentlySet["showBuys"] === "undefined"){
             body["showBuys"] = undefined
         }
-        console.log("recentlySet[sortKey]: ", recentlySet["sortKey"]);
         if(recentlySet["sortKey"] !== undefined && recentlySet["sortKey"] !== "undefined"){
-            console.log("recentlySet[sortKey]: ", recentlySet["sortKey"]);
             body.sort["order_by"] = recentlySet["sortKey"]
         }else if(recentlySet["sortKey"] === "undefined"){
             body.sort["order_by"] = undefined
@@ -808,6 +866,7 @@ function main(){
         }else{
             setAllData([]);
         }
+        setIndex(0);
     }
 
 
@@ -842,21 +901,22 @@ function main(){
             {showPopup ? <Popup content="Some text" handleClose={() => setShowPopup(!showPopup)}/> : <></>}
         </div>
         <div>
-            <Grid sortKey={sortKey} setSortKey={setSortKey} asc={asc} setAsc={setAsc} all_data={all_data} update_query={update_query}/>
+            <Grid sortKey={sortKey} setSortKey={setSortKey} asc={asc} setAsc={setAsc} all_data={all_data} update_query={update_query} index={index} setIndex={setIndex}/>
         </div>
         {/* Components used for testing purposes */}
         <Ophir></Ophir>
-        {/* <Ophir2 func={setAllData}>all_data</Ophir2> */}
         <Combine_states filteredLocations={filteredLocations} lowerPrice={lowerPrice} upperPrice={upperPrice} showBuys={showBuys} startTimeFilter={startTimeFilter} endTimeFilter={endTimeFilter} sortKey={sortKey} asc={asc}>
             test
         </Combine_states>
         <Display_data all_data={all_data}>
             log data
         </Display_data>
+        <Populate_data>
+            populate DB
+        </Populate_data>
     </>
 }
 
-generateData();
 const rootNode = document.getElementById('market-root');
 const root = ReactDOM.createRoot(rootNode);
 root.render(React.createElement(main));
