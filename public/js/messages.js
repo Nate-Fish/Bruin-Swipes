@@ -132,13 +132,6 @@ function App() {
         ]
       }
   ]);
-  let testing = {
-    sender: 100,
-    recipient: 101,
-    read: false,
-    text: "Hello World",
-    time: 101240125 
-  }
   const [curConversationIndex, setCurConversationIndex] = React.useState(null);
   const handleSend = (message) => {
     //get the time in AM/PM format
@@ -163,14 +156,6 @@ function App() {
     }
     // code to scroll to the bottom of the message list when a message is sent
   }
-  const ophir = {
-    sender: 101,
-    recipient: 100,
-    read: false,
-    text: "Hello World",
-    time: 101240125
-  }
-
   return (
     //create a messages sidebar that says "Chats" above the list of conversations
       <div className="App">
@@ -184,8 +169,18 @@ function App() {
             <ChatHeader conversation={conversations[curConversationIndex]} />
             <MessageList className = "messageList" currentConversation={conversations[curConversationIndex]}/>
             <MessageForm handleSend={handleSend}/>
-            <button onClick={() => makeRequest("/send-messages", testing)}>Send Message</button>
-            <button onClick={() => makeRequest("/get-messages", ophir)}>Get Message</button>
+            <button onClick={async() => {
+              let testing = {
+                email: "hahahah@gmail.com",
+                message: "hello this is the first message"
+              };
+              let response = await makeRequest("/send-messages", testing);
+              console.log(response);}}>Send Message</button>
+            <button onClick={ async () =>{
+              let response = await makeRequest("/get-messages");
+              console.log(response)
+            }}>
+                Get Message</button>
           </>
         ) : (
           <div className="no-conversation">No conversation selected</div>
@@ -197,4 +192,3 @@ function App() {
 const rootNode = document.getElementById('messages-root');
 const root = ReactDOM.createRoot(rootNode);
 root.render(React.createElement(App));
-// export default App;

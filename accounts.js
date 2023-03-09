@@ -341,30 +341,52 @@ async function certify(user_id, email) {
 }
 
 // write function to send messages
-async function send_messages(sender, recipient, message, read, time) {
+async function send_messages(sender, recipient, contents) { 
+    let response = ({"status": "fail"})
     try {
-      const result = await mongo.insert_doc({
-        sender: sender,
-        recipient: recipient,
-        message: message,
-        read: read,
-        time: time
-      }, "Messages", "messages");
-      return result.insertedCount === 1;
-    } catch (error) {
-      console.error("ERROR OCCURRED IN SENDING MESSAGE: " + error.message);
-      return false;
-    }
+        // Two Cases (Below, do this in accounts.js)
+        // Case 1: New Conversation, use mongo.add_data to add the new document for the conversation, fill in the message
+        // To query the conversation use {$all : {people: [EMAIL1, EMAIL2]}} 
+        if (sender == recipient) {
+          return response;
+        }
+        let conversation = await mongo.get_doc({people: {$all : [sender, recipient]}}, "Messages", "messages");
+        if(conversation == null) {
+            await mongo.add_data({
+                people: [sender, recipient],
+                messages: [{
+                sender: sender,
+                contents: contents,
+                time: (new Date()).getTime()
+                }]
+            }, "Messages", "messages");
+             response.status = "success";
+        }
+        // Case 2: Existing Conversation, use mongo.update_docs to update the conversation, fill in the message
+        else {
+            await mongo.update_docs({people: {$all :[sender, recipient]}}, {$push: {messages: {
+                sender: sender,
+                contents: contents,
+                time: (new Date()).getTime()
+            }}}, "Messages", "messages");
+            response.status = "success";
+        }
+    } catch (error) {console.log("ERROR OCCURRED IN SENDING MESSAGES: " + error.message)}
+    return response;
   }
-  
-//write function to get messages
-async function get_messages (sender, recipient) {
+
+/**
+ * Get messages uses user email to get all messages for that user. 
+ * @param {string} sender sender email
+ * @returns {array} array of all messages that the user has sent or received
+ */
+async function get_messages (sender) {
+    let response = {"status": "fail"};
     try {
-        let matching_messages = await mongo.get_data({"sender": sender, "recipient": recipient}, "Messages", "messages");
-        console.log(matching_messages)
-        return matching_messages;
+        response = await mongo.get_data({people : sender}, "Messages", "messages");
+        console.log(response); // TODO DELETE
     } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message)}
-    return null;
+    return response;
 }
 
 
