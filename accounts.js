@@ -347,9 +347,14 @@ async function send_messages(sender, recipient, contents) {
         // Two Cases (Below, do this in accounts.js)
         // Case 1: New Conversation, use mongo.add_data to add the new document for the conversation, fill in the message
         // To query the conversation use {$all : {people: [EMAIL1, EMAIL2]}} 
-        if (sender == recipient) {
-          return response;
-        }
+        if (sender == recipient) {return response;}
+        if (contents == "") {return response;}
+        if (contents.length > 1000) {return response;}
+        if (sender == null || recipient == null) {return response;}
+        if (sender == "" || recipient == "") {return response;}
+        // check if recipient email is valid
+        let recipient_account = await mongo.get_doc({email: recipient}, "Accounts", "accounts");
+        if (recipient_account == null) {return response;}
         let conversation = await mongo.get_doc({people: {$all : [sender, recipient]}}, "Messages", "messages");
         if(conversation == null) {
             await mongo.add_data({
@@ -383,8 +388,7 @@ async function send_messages(sender, recipient, contents) {
 async function get_messages (sender) {
     let response = {"status": "fail"};
     try {
-        response = await mongo.get_data({people : sender}, "Messages", "messages");
-        console.log(response); // TODO DELETE
+        response = await mongo.get_data( {people : sender}, "Messages", "messages");
     } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message)}
     return response;
 }

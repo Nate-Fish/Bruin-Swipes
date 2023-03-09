@@ -91,8 +91,14 @@ async function add_data(value, database = "default", collection = "default") {
  * @param {String} collection
  * @return {Array} An array of all documents.
  */
-async function get_data(query = {}, database = "default", collection = "default") {
-    let response = client.db(database).collection(collection).find(query);
+async function get_data(query = {}, database = "default", collection = "default", order_by = undefined, asc = 1) {
+    //if order_by is given by the user, sort the collection by the attribute
+    let response = undefined;
+    if(order_by){
+        response = client.db(database).collection(collection).find(query).sort( { order_by: asc ? 1 : -1} );
+    }else{
+        response = client.db(database).collection(collection).find(query);
+    }
     return response.toArray();
 }
 

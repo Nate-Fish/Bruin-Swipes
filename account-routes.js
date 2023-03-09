@@ -290,10 +290,9 @@ async function get_messages(req, res) {
             if (!verify_response) {
                 return;
             }
-
             let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
             let response = await accounts.get_messages(email);
-            res.send({response});
+            res.send(response);
 }
 module.exports = {
     sign_up, login, logout, verify_session, certify, send_messages, get_messages, get_notifications, read_notifications, fetch_profile, post_profile
