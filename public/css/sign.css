@@ -1,0 +1,109 @@
+body {
+  background-color: #DBEDFB;
+  color: #FFFFFF;
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
+}
+
+h1 {
+  color: #FFFFFF;
+  text-align:center;
+}
+
+button {
+  border-color: #FFFFFF;
+  color:#FFFFFF;
+  font-family: "Helvetica", "Arial", sans-serif;
+  background-color: #2774AE;
+  border-style: solid;
+  border-radius: 15px;
+  font-size: 100%;
+  padding: 20px;
+  border-color: #FFFFFF;
+}
+
+button:hover {
+  text-decoration: underline;
+}
+
+.top-page {
+  color:#2774AE;
+}
+
+.login-postion {
+  margin-left: 55%;
+  border-radius: 15px;
+  border-style: solid;
+  padding: 10px;
+}
+
+.sign-up-postion {
+  margin-right: 45%;
+  border-radius: 15px;
+  border-style: solid;
+  padding: 10px;
+}
+
+.back-home {
+  display: flex; 
+  flex-flow:column nowrap; 
+  align-items: center;
+}
+
+.back-home-style {
+  border-color: #FFFFFF;
+  color:#FFFFFF;
+  font-family: "Helvetica", "Arial", sans-serif;
+  background-color: #2774AE;
+  font-size: 100%;
+  border-color: #FFFFFF;
+  text-decoration: underline;
+}
+
+.parent-div {
+  padding: 40px;
+  max-width: 600px;
+  margin: 40px auto;
+  border-radius: 5%;
+  background-color: #2774AE;
+  min-width: 480px;
+}
+
+.buttons-primary {
+  list-style: none; 
+  padding: 0; 
+  margin: 0 auto 100px auto;
+}
+
+.buttons {
+  float:left; 
+  width: 48%; 
+  text-align:center; 
+  cursor: pointer;  
+  border-color: #FFFFFF;
+}
+
+.buttons:hover {
+  text-decoration: underline;
+}
+
+.transition {
+  transition: 3s ease
+}
+
+.column {
+  display:flex; 
+  flex-flow: column nowrap; 
+  justify-content: space-evenly; 
+  width:75%; 
+  grid-gap:20px; 
+  margin:auto
+}
+
+.name-row{
+  display:flex; 
+  flex-flow: row nowrap; 
+  justify-content: space-between; 
+  width: 75%; 
+  margin: 0 auto 20px auto;
+}

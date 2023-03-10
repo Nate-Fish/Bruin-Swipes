@@ -341,6 +341,60 @@ async function certify(user_id, email) {
     }
 }
 
+// write function to send messages
+async function send_messages(sender, recipient, contents) { 
+    let response = ({"status": "fail"})
+    try {
+        // Two Cases (Below, do this in accounts.js)
+        // Case 1: New Conversation, use mongo.add_data to add the new document for the conversation, fill in the message
+        // To query the conversation use {$all : {people: [EMAIL1, EMAIL2]}} 
+        if (sender == recipient) {return response;}
+        if (contents == "") {return response;}
+        if (contents.length > 1000) {return response;}
+        if (sender == null || recipient == null) {return response;}
+        if (sender == "" || recipient == "") {return response;}
+        // check if recipient email is valid
+        let recipient_account = await mongo.get_doc({email: recipient}, "Accounts", "accounts");
+        if (recipient_account == null) {return response;}
+        let conversation = await mongo.get_doc({people: {$all : [sender, recipient]}}, "Messages", "messages");
+        if(conversation == null) {
+            await mongo.add_data({
+                people: [sender, recipient],
+                messages: [{
+                sender: sender,
+                contents: contents,
+                time: (new Date()).getTime()
+                }]
+            }, "Messages", "messages");
+             response.status = "success";
+        }
+        // Case 2: Existing Conversation, use mongo.update_docs to update the conversation, fill in the message
+        else {
+            await mongo.update_docs({people: {$all :[sender, recipient]}}, {$push: {messages: {
+                sender: sender,
+                contents: contents,
+                time: (new Date()).getTime()
+            }}}, "Messages", "messages");
+            response.status = "success";
+        }
+    } catch (error) {console.log("ERROR OCCURRED IN SENDING MESSAGES: " + error.message)}
+    return response;
+  }
+
+/**
+ * Get messages uses user email to get all messages for that user. 
+ * @param {string} sender sender email
+ * @returns {array} array of all messages that the user has sent or received
+ */
+async function get_messages (sender) {
+    let response = {"status": "fail"};
+    try {
+        response = await mongo.get_data( {people : sender}, "Messages", "messages");
+    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message)}
+    return response;
+}
+
+
 /**
  * Unpack req and use its defined values to query the Listings database and return the matches
  * @param {JSON} req - We expect the query to contain URL parameters such that req = 
@@ -552,5 +606,5 @@ async function post_profile(user_id, params) {
 
 
 module.exports = {
-    sign_up, login, get_account_attribute, issue_session, verify_session, certify, query_listings, insert_listing, fetch_profile, post_profile
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify, query_listings, insert_listing, fetch_profile, post_profile, send_messages, get_messages
 }
