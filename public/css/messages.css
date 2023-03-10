@@ -14,6 +14,7 @@
     border-radius: 20px 0 0 20px;
     border: none;
     outline: none;
+    position: relative;
   }
   .message-input-area {
     display: flex;
@@ -32,7 +33,7 @@
     font-size: 16px;
     color: #fff;
     background-color: #2774AE;
-    border-radius: 0 20px 20px 0;
+    /* border-radius: 20px 20px 20px 20px; */
     border: none;
     outline: none;
     cursor: pointer;
@@ -42,13 +43,15 @@
   }
   .messages-sidebar {
     float: left;
-    background-color: #f9f9f9;
+    background-color: #D3D4D7;
     width: 20%;
     height: 91.5vh;
     position: relative;
     top: 0;
     left: 0;
     overflow-y: scroll;
+    /* border: solid 3px; 
+    border-image: linear-gradient(to left, #000000, #2774AE) 1; */
   }
   
   .conversation {
@@ -105,18 +108,19 @@
   overflow-y: scroll;
   height: 81vh;
 }
-/* .messages-title {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+.messages-title {
+  color: #fff;
+  background: #005587;
+  font-size: 40px;
+  text-align: left;
   height: 10vh;
-  background-color: #f9f9f9;
-  font-size: 20px;
-  font-weight: bold;
-  color: #000406; */
-/* } */
-
+  width: 100%;
+  text-align:  center;
+  margin: auto;
+  border: solid 3px #FFD100;
+  border-right: none;
+  border-image: linear-gradient(to right, #FFB81C, #FFC72C) 1;
+}
 
 .message-list {
   display: flex;
@@ -147,18 +151,26 @@
   border-radius: 5px;
   padding: 10px;
 }
-.image-header {
-  width: 100%;
-  position: absolute;
-  height: 10vh;
-  background-color: #f9f9f9;
-  border: solid 1px grey;
-}
-
 .message-right-text {
   background-color: #8BB8E8;
 }
 
 .message-left-text {
-  background-color: #D3D3D3;
+  background-color: #dbd8d8;
+}
+
+.profile-link {
+  color: white;
+  text-decoration: none;
+}
+
+.image-header {
+  width: 100%;
+  position: absolute;
+  height: 10vh;
+  background: linear-gradient(to right, #005587 , #8BB8E8);
+  border: solid 3px #FFD100;
+  border-image: linear-gradient(to right, #FFC72C, #FFFFFF) 1;
+  border-left: none;
+  color: white;
 }

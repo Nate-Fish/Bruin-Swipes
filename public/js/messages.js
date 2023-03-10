@@ -55,9 +55,12 @@ function MessageList(props) {
 
 function ChatHeader(props) {
   const { conversation } = props;
+  // TODO add link to profile page using email
   return (
     <div className = "image-header">
-      <h2><img src={conversation.avatar} alt="conversation avatar" style={{"maxWidth" : "50px"}}/> {conversation.name} </h2>
+      <h2><img src={conversation.avatar} alt="conversation avatar" style={{"maxWidth" : "50px"}}/> 
+      <a className="profile-link" href="{'profile.html' + conversation.email}">{'\t' + conversation.name}</a> 
+      </h2>
     </div>
   );
 }
@@ -119,15 +122,14 @@ function App() {
     }
   }
   return (
-    //create a messages sidebar that says "Chats" above the list of conversations
       <div className="App">
       <div className="messages-sidebar">
+      <h1 className = "messages-title">Chats</h1>
         <ConversationList conversations={conversations} setCurConversationIndex={setCurConversationIndex} />
       </div>
       <div className="chat">
         {curConversationIndex !== null ? (
           <>
-          {/* <h1 className = "messages-title">Chats</h1> */}
             <ChatHeader conversation={conversations[curConversationIndex]} />
             <MessageList className = "messageList" currentConversation={conversations[curConversationIndex]}/>
             <MessageForm handleSend={handleSend}/>
@@ -173,14 +175,6 @@ function formatConversations (conversations) {
     globalConversations = formattedConversations;
   return;
   }
-  // Sort the conversations so the one if a new message has been sent or received
-  // if(globalConversationIndex != 0) {
-  //   let temp = formattedConversations[globalConversationIndex];
-  //   let tempArray = formattedConversations;
-  //   tempArray.slice(globalConversationIndex, 1);
-  //   tempArray.unshift(temp);
-  //   formattedConversations = tempArray;
-  // }
   formattedConversations.sort((a, b) => b.messages[b.messages.length - 1].time - a.messages[a.messages.length - 1].time);
   let oldLength = formattedConversations[globalConversationIndex].messages.length;
   let newLength = globalConversations[globalConversationIndex].messages.length;
