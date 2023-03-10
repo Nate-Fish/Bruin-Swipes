@@ -257,7 +257,43 @@ async function read_notifications(req, res) {
     await notificationHandler.readAll(verify_response["user_id"]);
     res.send({"status": "success"});
 }
+/**
+ * Send a message.
+ * 
+ * @param {*} req We expect the body to have atleast one key with the following form:
+ * {
+ *      email: {String},
+ *      message: {String}
+ * }
+ * @param {*} res 
+ * @returns 
+ */
+async function send_messages(req, res) {
+        // Expect res to have body.data attribute
+        let verify_response = await test_signed(req, res);
+        if (!verify_response) {
+            return;
+        }
 
+        // Grab the email of the current user using account_attribute
+        let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
+        // User sends in their req.body: req.body.email, req.body.message ONLY
+        let response = await accounts.send_messages(email, req.body.email, req.body.message);
+
+        res.send(response);
+        // Assume that the messages array for any conversation has length >= 1 always
+}
+
+async function get_messages(req, res) {
+            // Expect res to have body.data attribute
+            let verify_response = await test_signed(req, res);
+            if (!verify_response) {
+                return;
+            }
+            let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
+            let response = await accounts.get_messages(email);
+            res.send(response);
+}
 module.exports = {
-    sign_up, login, logout, verify_session, certify, get_notifications, read_notifications, fetch_profile, post_profile
+    sign_up, login, logout, verify_session, certify, send_messages, get_messages, get_notifications, read_notifications, fetch_profile, post_profile
 }
