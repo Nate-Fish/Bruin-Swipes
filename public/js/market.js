@@ -348,6 +348,25 @@ function unpack_date(date){
     return combined_date;
 }
 
+async function send_message(vals){
+    await makeRequest("/send-messages", {
+        email: vals.user["email"],
+        message: vals["selling"] ? "Hey! I'm interested in buying your " + vals["location"] + " swipe for " + "$" + vals["price"] + ".00 on " + unpack_date(vals["time"]) :
+        "Hey! I'm interested in selling you a swipe at " + vals["location"] + " for " + "$" + vals["price"] + ".00 on " + unpack_date(vals["time"])
+    });
+    window.location.href = "messages.html?email=" + vals.user["email"];
+}
+
+function message_button(vals){
+    if(email !== vals.user["email"]){
+        return (<button onClick={() => send_message(vals)}>
+        Insert message block
+        </button>)
+    }else{
+        return <></>
+    }
+}
+
 
 function map_data(all_data, index){
     let lowerBound = index*50;
@@ -372,9 +391,7 @@ function map_data(all_data, index){
                 {vals["selling"] ? "Selling" : "Buying"}
             </td>
             <td>
-                <button>
-                    Insert message block
-                </button>
+                {message_button(vals)}
             </td>
         </tr>)
     })
@@ -1194,6 +1211,12 @@ function main(){
     </>
 }
 
+
+let email;
+function main2(signedIn){
+    email = signedIn.email;
+    root.render(React.createElement(main));
+}
+signInQueue.push(main2);
 const rootNode = document.getElementById('market-root');
 const root = ReactDOM.createRoot(rootNode);
-root.render(React.createElement(main));
