@@ -13,6 +13,8 @@ const path = require('path');
 const process = require('process');
 let accounts = null;
 const mongo = require('./mongodb-library.js');
+let logger = new (require('./logging.js'))("logs/emails_notis");
+
 
 // Install the following libraries with npm install
 let authenticate, google;
@@ -146,6 +148,8 @@ class emailService {
      * @param {String} body in HTML
      */
     async send_email(recipients, subject, body) {
+        logger.log(`Sending email: ${recipients.join(', ')} ${subject}`);
+
         let auth = this.checkAuth();
         // Send a template email, replacing our word into the subject/body as needed
 
@@ -202,15 +206,12 @@ Content-Type: text/html; charset="UTF-8"
      */
     async certify_email(name, email, user_id) {
         // TODO: Change recipients to actual email parameter above (for now, route emails to where you want)
-        console.log(this.route)
-        let body = `<p>Hi ` + name + `,</p>
+        let body = `<p>Hi ${name},</p>
     
         <p>Welcome to BruinSwipes! After verifying your account, you can login normally from the website. Verify your account with the link below:</p>
-        <a href="` + this.route + `/certify?user_id=` + user_id + `&email=` + email + `">Verify your account</a>
+        <a href="${this.route}/certify?user_id=${user_id}&email=${email}">Verify your account</a>
                 
         <p>Go Bruins!</p>`;
-        console.log(body);
-        
         
         this.send_email("bruinswipesbot@gmail.com", "Verify your BruinSwipes Account", body);
     }
@@ -268,10 +269,10 @@ class notificationService {
 
         let rate = 1000 * 60 * 60; // 60 minutes
         setInterval(() => {
-            console.log("Running Cronjob");
+            logger.log("Running Cronjob");
             this.conversation_cronjob();
 
-        }, 30 * 1000);
+        }, rate);
     }
 
     /**
@@ -305,6 +306,7 @@ class notificationService {
         notification.time = (new Date()).toDateString();
         notification.read = false;
 
+        logger.log(`Sending Notification: ${user_id_email} ${subject} ${notification.title}`);
         // Send the email to the given user
         let email = emailForUserID ? user_id_email : await accounts.get_account_attribute(user_id, "email");
         this.emailHandler.send_email("bruinswipesbot@gmail.com", subject, body);
@@ -351,17 +353,15 @@ class notificationService {
      * @param {*} from The user who started the conversation (email)
      * @param {*} to The person to notify (email)
      */
-    async new_conversation(from, to) {
-        let address = emailHandler.route + "/messages.html";
+    async new_conversation(from, to) {        
+        let body = `<p>Hi ${to},<br>
+        You have a new message from ${from}.</p>
         
-        let body = `<p>Hi ` + to + `,<br>
-        You have a new message from ` + from + `.</p>
-        
-        <p>View your messages at ` + address + `</p>`;
+        <p>View your messages at ${emailHandler.route}/messages.html</p>`;
 
         let notification = {
             "title": "New Conversation",
-            "desc": "You have a new conversation from " + from + "."
+            "desc": `You have a new conversation from ${from}.`
         }
 
         this.notify(to, "New Conversation", body, notification, true);
@@ -379,16 +379,16 @@ class notificationService {
         let address = emailHandler.route + "/messages.html";
 
         // Create list of people
-        let body = `<p>Hi ` + to + `,<br>
+        let body = `<p>Hi ${to},<br>
 
-        <p>You have ` + number + ` new messages in the last hour from the following
-        users: ` + froms.join(", ") + `.</p>
+        <p>You have ${number} new messages in the last hour from the following
+        users: ${froms.join(", ")}.</p>
         
-        <p>View your messages at ` + address + `</p>`;
+        <p>View your messages at ${emailHandler.route}/messages.html</p>`;
 
         let notification = {
             "title": "New Message Count in Last Hour",
-            "desc": `You have ` + number + ` new messages in the last hour!`
+            "desc": `You have ${number} new messages in the last hour!`
         }
 
         this.notify(to, "You have New Messages!", body, notification, true);

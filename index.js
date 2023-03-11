@@ -18,7 +18,7 @@ try {
     express = require('express');
 } catch (err) {
     console.log("Error on importing Express. You likely did not run 'npm install' first.");
-    process.exit(0);
+    process.exit(1);
 }
 
 // Load the mongo library and initialize the client
@@ -45,6 +45,7 @@ let server = app.listen(port, () => {
 process.on('SIGINT', () => {
     mongo.closeClient();
     console.log("Closing down BruinSwipes server...");
+    logger.log("Closed Server");
     process.exit(0);
 });
 
@@ -66,3 +67,7 @@ route_handler(app);
 // END ROUTES & EMAIL SERVICE CODE
 // -------------------------------------------------------------------
 
+
+// MISCELLANEOUS IMPORTS
+let logger = new (require('./logging.js'))("logs/server");
+logger.log("Starting server...");
