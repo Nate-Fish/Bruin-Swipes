@@ -13,7 +13,7 @@ console.log("Welcome to BruinSwipes! Setting up the server... (Close the server 
 const cookieParser = require('cookie-parser');
 
 // Attempt to import express
-let express = require('express');
+let express;
 try {
     express = require('express');
 } catch (err) {
@@ -33,7 +33,8 @@ app.use(express.static('public')); // By default, serve static files from the pu
 app.use(express.json({limit: "50mb"})); // Allow JSON GET/POST requests
 
 // Listen on default port or 3000 by default
-let server = app.listen(process.env.PORT || 3000, () => {
+let port = process.env.PORT || 3000;
+let server = app.listen(port, () => {
     console.log("Starting to listen at http://localhost:" + server.address().port);
 
     mongo.connectClient(); // Connect here, so that atleast the serving of pages is ready
@@ -52,7 +53,9 @@ process.on('SIGINT', () => {
 // -------------------------------------------------------------------
 
 // We do all "email handling" where it is necessary to do so
+var ip = require("ip");
 let {emailHandler} = require('./email-service.js');
+emailHandler.setRoute(ip.address() + ":" + port);
 
 let route_handler = require('./route-handler.js');
 route_handler(app);

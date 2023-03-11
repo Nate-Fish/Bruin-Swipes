@@ -9,10 +9,9 @@
  */
 
 const fs = require('fs').promises;
-const { raw } = require('express');
 const path = require('path');
 const process = require('process');
-const accounts = require('./accounts.js');
+let accounts = null;
 const mongo = require('./mongodb-library.js');
 
 // Install the following libraries with npm install
@@ -79,8 +78,20 @@ class emailService {
         console.log("Initializing email client...")
 
         this.auth = null;
+        // The route for the user to use
+        this.route = "http://localhost:3000";
 
         this.initialize();
+    }
+
+    /**
+     * Set the route of the server in the email handler for it to dynamically
+     * refer to the IP address/web address of where this instance of the server
+     * is hosted. Omit the starting http or https.
+     * @param {*} route 
+     */
+    setRoute(route) {
+        this.route = "http://" + route;
     }
 
     async initialize() {
@@ -185,21 +196,23 @@ Content-Type: text/html; charset="UTF-8"
     /**
      * Send a certification email with a link to where the user can get
      * their email certified...
-     * @param {String} address The address of the server (get this using req.protocol and req.get('host'))
      * @param {*} name 
      * @param {*} email 
      * @param {*} user_id 
      */
-    async certify_email(address, name, email, user_id) {
+    async certify_email(name, email, user_id) {
         // TODO: Change recipients to actual email parameter above (for now, route emails to where you want)
-        this.send_email("bruinswipesbot@gmail.com", "Verify your BruinSwipes Account", `
-<p>Hi ` + name + `,</p>
+        console.log(this.route)
+        let body = `<p>Hi ` + name + `,</p>
     
-<p>Welcome to BruinSwipes! After verifying your account, you can login normally from the website. Verify your account with the link below:</p>
-<a href="` + address + `/certify?user_id=` + user_id + `&email=` + email + `">Verify your account</a>
+        <p>Welcome to BruinSwipes! After verifying your account, you can login normally from the website. Verify your account with the link below:</p>
+        <a href="` + this.route + `/certify?user_id=` + user_id + `&email=` + email + `">Verify your account</a>
+                
+        <p>Go Bruins!</p>`;
+        console.log(body);
         
-<p>Go Bruins!</p>
-`);
+        
+        this.send_email("bruinswipesbot@gmail.com", "Verify your BruinSwipes Account", body);
     }
 
 }
@@ -245,9 +258,20 @@ class notificationService {
 
         this.database = "Accounts";
         this.collection = "notifications";
+        
+        // Cronjob collection for user message counts
+        this.cronCollection = "cronMessages";
 
-        // Examples
-        // this.notify_message("Pirjot", "dev@gmail.com", null);
+
+        // Setup cronjob function to be called every hour
+        console.log("Setting up Notification Cronjob...");
+
+        let rate = 1000 * 60 * 60; // 60 minutes
+        setInterval(() => {
+            console.log("Running Cronjob");
+            this.conversation_cronjob();
+
+        }, 30 * 1000);
     }
 
     /**
@@ -283,7 +307,7 @@ class notificationService {
 
         // Send the email to the given user
         let email = emailForUserID ? user_id_email : await accounts.get_account_attribute(user_id, "email");
-        // this.emailHandler.send_email(email, subject, body);
+        this.emailHandler.send_email("bruinswipesbot@gmail.com", subject, body);
 
         // Store the notification
         mongo.add_data(notification, this.database, this.collection);
@@ -319,28 +343,110 @@ class notificationService {
      * 5. Message sent from one user to another
      */
 
-    /**
-     * Notify a user by sending them a generic message.
-     * @param {*} from 
-     * @param {*} to 
-     * @param {*} messageBody 
-     */
-    async notify_message(from, to, messageBody) {
-        // Template function
-        let body = `<h1>Hi you got a new message from: `+ from +`</h1>`;
+    // TODO, change emails to usernames where needed
 
-        // Mongo Notification
+    /**
+     * Notify a user that they have a new conversation from another
+     * user.
+     * @param {*} from The user who started the conversation (email)
+     * @param {*} to The person to notify (email)
+     */
+    async new_conversation(from, to) {
+        let address = emailHandler.route + "/messages.html";
+        
+        let body = `<p>Hi ` + to + `,<br>
+        You have a new message from ` + from + `.</p>
+        
+        <p>View your messages at ` + address + `</p>`;
+
         let notification = {
-            "title": "New Message",
-            "desc": "This is my description"
-        };
-        this.notify(to, "New Message", body, notification, true);
+            "title": "New Conversation",
+            "desc": "You have a new conversation from " + from + "."
+        }
+
+        this.notify(to, "New Conversation", body, notification, true);
+    }
+
+    /**
+     * Send the person a message on the number of messages that they have
+     * received in the last hour.
+     * 
+     * @param {String[]} froms All the people that the person has has messages from (emails)
+     * @param {String} to The person being notified (email)
+     * @param {Number} number The TOTAL number of messages that they have received
+     */
+    async cronjobHelper(froms, to, number) {
+        let address = emailHandler.route + "/messages.html";
+
+        // Create list of people
+        let body = `<p>Hi ` + to + `,<br>
+
+        <p>You have ` + number + ` new messages in the last hour from the following
+        users: ` + froms.join(", ") + `.</p>
+        
+        <p>View your messages at ` + address + `</p>`;
+
+        let notification = {
+            "title": "New Message Count in Last Hour",
+            "desc": `You have ` + number + ` new messages in the last hour!`
+        }
+
+        this.notify(to, "You have New Messages!", body, notification, true);
+    }
+
+    /**
+     * Read all new message counts from the database and clear them.
+     * Sending messages to the users that they have new messages everytime.
+     */
+    async conversation_cronjob() {
+        // Read all the values from the database
+        let documents = await mongo.get_data({}, "Accounts", this.cronCollection);
+
+        while (documents.length > 0) {
+            let email = documents[0].email;
+            let new_docs = documents.filter((x) => x.email == email);
+
+            let froms = [];
+            let count = 0;
+            for (let doc of new_docs) {
+                froms.push(doc.from);
+                count += doc.count;
+            }
+            this.cronjobHelper(froms, email, count);
+
+            documents = documents.filter((x) => x.email != email);
+        }
+
+        // Clear collection
+        await mongo.delete_docs_q({}, "Accounts", this.cronCollection);
+    }
+
+    /**
+     * Increment the number of messages that a user received.
+     * @param {String} email The person getting the email (email)
+     * @param {String} from The sender of the message (email)
+     */
+    async increment_conversation_cron(email, from) {
+        // First attempt to fetch a document that matches this sender and receiver
+        let doc = await mongo.get_doc({email, from}, "Accounts", this.cronCollection);
+        if (doc == null) {
+            // Create a new doc
+            await mongo.add_data({
+                email,
+                from,
+                count: 1
+            }, "Accounts", this.cronCollection);
+            return;
+        }
+        await mongo.update_docs({email, from}, {$inc: {count: 1}}, "Accounts", this.cronCollection);
     }
 }
 
 let emailHandler = new emailService();
 let notificationHandler = new notificationService(emailHandler);
 module.exports = {emailHandler, notificationHandler};
+
+accounts = require('./accounts.js');
 
 // Email Handler also adds notificationHandler to module.exports
 // module.exports.notificationHandler = new notificationService(module.exports.emailHandler);
