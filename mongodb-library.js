@@ -87,15 +87,17 @@ async function add_data(value, database = "default", collection = "default") {
  * Note: provide an empty JSON Object if you would like to get all data.
  * 
  * @param {JSON} query Use an empty doc to select everything
+ * @param {String} order_by - attribute by which to sort the resulting collection
+ * @param {Boolean} asc - boolean value describing whether to sort in ascending or descending order. Default is 1, for ascending order.
  * @param {String} database
  * @param {String} collection
  * @return {Array} An array of all documents.
  */
-async function get_data(query = {}, database = "default", collection = "default", order_by = undefined, asc = 1) {
+ async function get_data(query = {}, database = "default", collection = "default", order_by = undefined, asc = 1) {
     //if order_by is given by the user, sort the collection by the attribute
     let response = undefined;
     if(order_by){
-        response = client.db(database).collection(collection).find(query).sort( { order_by: asc ? 1 : -1} );
+        response = client.db(database).collection(collection).find(query).sort( { [order_by]: (asc ? 1 : -1) } );
     }else{
         response = client.db(database).collection(collection).find(query);
     }

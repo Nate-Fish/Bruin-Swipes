@@ -57,7 +57,14 @@ function setup_post_routes (app) {
     // Login to an account
     app.post('/login', (req, res) => account_routes.login(req, res));
 
+    // Post a listing to DB
+    app.post('/post-listing', (req, res) => account_routes.post_listing(req, res));
+
+    // Get queried results from DB
+    app.post('/get-listings', (req, res) => account_routes.get_listings(req, res));
     //Posts profile
+
+    
     app.post('/post-profile', (req, res) => account_routes.post_profile(req, res));
 
     // START ACCOUNT GET ROUTES

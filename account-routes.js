@@ -274,7 +274,6 @@ async function send_messages(req, res) {
         if (!verify_response) {
             return;
         }
-
         // Grab the email of the current user using account_attribute
         let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
         // User sends in their req.body: req.body.email, req.body.message ONLY
@@ -284,16 +283,106 @@ async function send_messages(req, res) {
         // Assume that the messages array for any conversation has length >= 1 always
 }
 
-async function get_messages(req, res) {
-            // Expect res to have body.data attribute
-            let verify_response = await test_signed(req, res);
-            if (!verify_response) {
-                return;
-            }
-            let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
-            let response = await accounts.get_messages(email);
-            res.send(response);
+/**
+ * A function meant to handle queries for the Listings Database from the MongoDB
+ * 
+ * @param {JSON} req - We expect the query to contain URL parameters such that req = 
+ * {
+ *      locations: [Array, of, locations],
+ *      price_range: {
+ *          price_min: {Number},
+ *          price_max: {Number}
+ *      },
+ *      time_range: {
+ *          time_min: {Timestamp}
+ *          time_max: {Timestamp}
+ *      },
+ *      selling: {Boolean},
+ *      sort: {
+ *          order_by: {String},
+ *          asc: {Boolean} //ascending is assumed unless otherwise specified
+ *      }
+ * }
+ * 
+ * If a parameter is not used for querying or sorting, keep the structure but replace the values with undefined. Example:
+ *  * {
+ *      locations: ["rendezvous", "bplate"],
+ *      price_range: {
+ *          price_min: undefined,
+ *          price_max: 8.5
+ *      },
+ *      time_range: {
+ *          time_min: 2023-02-22T12:12
+ *          time_max: undefined
+ *      },
+ *      selling: undefined,
+ *      sort: {
+ *          order_by: "Time",
+ *          asc: true
+ *      }
+ * }
+ * 
+ */
+async function get_listings(req, res) {
+    // Cookies check
+    let response = {"data": null};
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        res.send(response);
+        return;
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    
+    if (verify_response["valid"]) {
+        // The verify response provides the user's id
+        response = await accounts.query_listings(verify_response["user_id"], req);
+    }
+    // Always send a response
+    res.send(response);
 }
+/**
+ * 
+ * 
+ * @param {*} req expects req.body to be equivalent to a JSON of the following structure
+ * {
+ * 
+ * 
+ * 
+ * }
+ * @param {*} res a response on whether the user's request was successful. If it was, send back a success message
+ * {
+ * 
+ * 
+ * }
+ */
+async function post_listing(req, res) {
+    // Expect res to have body.data attribute
+    let response = {"status": "fail"};
+    if (req.cookies == undefined || req.cookies["session"] == undefined) {
+        res.send(response);
+        return;
+    }
+    let verify_response = await accounts.verify_session(req.cookies["session"]);
+    
+    // MAKE SURE YOUR RESPONSES ARE STANDARDIZED!!!
+    if (!verify_response["valid"]) {
+        res.send(response);
+    }
+    
+    await accounts.insert_listing(verify_response["user_id"], req);
+    res.send({"status": "success"});
+}
+
+async function get_messages(req, res) {
+    // Expect res to have body.data attribute
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
+    let response = await accounts.get_messages(email);
+    res.send(response);
+}
+
 module.exports = {
-    sign_up, login, logout, verify_session, certify, send_messages, get_messages, get_notifications, read_notifications, fetch_profile, post_profile
+    sign_up, login, logout, verify_session, certify, get_listings, post_listing, get_notifications, read_notifications, fetch_profile, post_profile, send_messages, get_messages
 }
