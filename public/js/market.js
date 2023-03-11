@@ -44,7 +44,7 @@ function BuyButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickBuy} className="button-7">Buy</button>
+    return <button onClick={handleClickBuy} className="bruin-button">View Buy Listings</button>
 }
 
 function SellButton({ buy, callback, update_query }){
@@ -57,31 +57,38 @@ function SellButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickSell} className="button-7">Sell</button>
+    return <button onClick={handleClickSell} className="bruin-button">View Sell Listings</button>
 }
 
 function FilterButton({ callback }){
     function handleClickFilter() {
         callback()
     }
-    return <button onClick={handleClickFilter} className="button-7">Filter</button>
+    return <button onClick={handleClickFilter} className="bruin-button">Filters</button>
 }
 
 function CreateListingButton({ callback }){
     function handleClickListing() {
         callback()
     }
-    return <button onClick={handleClickListing} className="button-7">Listing</button>
+    return <button onClick={handleClickListing} className="bruin-button">Create Listing</button>
 }
 
 // Component that holds all the filters
 function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLowerPrice, upperPrice, setUpperPrice, startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter, update_query }){   
 
-    return <div className="temp">
-        <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/>
+    return (<>
+    <hr></hr>
+    <div className="filter_class">
+        {/* <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/> */}
         <PriceComponent lowerPrice={lowerPrice} upperPrice={upperPrice} setLowerPrice={setLowerPrice} setUpperPrice={setUpperPrice} update_query={update_query}/>
         <FilterTimeComponent startTimeFilter={startTimeFilter} setStartTimeFilter={setStartTimeFilter} endTimeFilter={endTimeFilter} setEndTimeFilter={setEndTimeFilter} update_query={update_query}/>
     </div>
+    <div className="filter_class">
+        <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/>
+    </div>
+    <hr></hr>
+    </>);
 }
 
 // Time part of the filter component
@@ -132,7 +139,7 @@ function FilterTimeComponent({ startTimeFilter, setStartTimeFilter, endTimeFilte
     }
 
     return (
-    <table className="margin">
+    <table className="filter-price">
         <thead>
             <tr>
                 <th>Times</th>
@@ -209,7 +216,7 @@ function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice, 
     }
 
 
-    return <table className="margin">
+    return <table className="filter-price">
         <thead>
             <tr>
                 <th>
@@ -291,7 +298,7 @@ function SearchBar({ searchCallback }){
 
 
     return <form onSubmit={e => {e.preventDefault();}}>
-        <label>
+        <label className="loc-search-bar">
             Search:
             <input type="text" value={field} 
             onChange={(e) => {
@@ -359,8 +366,8 @@ async function send_message(vals){
 
 function message_button(vals){
     if(email !== vals.user["email"]){
-        return (<button onClick={() => send_message(vals)}>
-        Insert message block
+        return (<button className="sm-bruin-button" onClick={() => send_message(vals)}>
+        Interested?
         </button>)
     }else{
         return <></>
@@ -374,26 +381,30 @@ function map_data(all_data, index){
     let all_data_copy = all_data.slice(lowerBound, upperBound);
     return(
         all_data_copy.map((vals, i) => {
-        return (<tr key={i}>
-            <td>
-                {vals["location"]}
-            </td>
-            <td>
-                {unpack_date(vals["time"])}
-            </td>
-            <td>
-                {"$" + vals["price"] + ".00"}
-            </td>
-            <td>
-                {vals.user.firstname + " " + vals.user.lastname}
-            </td>
-            <td>
-                {vals["selling"] ? "Selling" : "Buying"}
-            </td>
-            <td>
-                {message_button(vals)}
-            </td>
-        </tr>)
+        return (
+        // <div className="colored">
+            <tr className={i % 2 == 0 ? "alternated-row" : "other-row"}key={i}>
+            
+                <td >
+                    {vals["location"]}
+                </td>
+                <td>
+                    {unpack_date(vals["time"])}
+                </td>
+                <td>
+                    {"$" + vals["price"] + ".00"}
+                </td>
+                <td>
+                    {vals.user.firstname + " " + vals.user.lastname}
+                </td>
+                <td>
+                    {vals["selling"] ? "Selling" : "Buying"}
+                </td>
+                <td>
+                    {message_button(vals)}
+                </td>
+            </tr>
+        )
     })
     );
 }
@@ -428,60 +439,59 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
             }
         }
     
-        return (<><table>
-            <thead>
-                <tr>
-                    <th onClick={() => handleClick("location")}>
-                        Location
-                    </th>
-                    <th onClick={() => handleClick("time")}>
-                        Date
-                    </th>
-                    <th onClick={() => handleClick("price")}>
-                        Price
-                    </th>
-                    <th>
-                        Name
-                    </th>
-                    <th>
-                        Buy/Sell
-                    </th>
-                    <th>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {map_data(all_data, index)}
-            </tbody>
-        </table>
-        <table>
-            <tbody>
-                <tr>
-                    <td>
-                        <button onClick={() => {
-                            if (index > 0) setIndex(index - 1);
-                            }}>Previous
-                        </button>
-                    </td>
-                    <td>
-                        <p>{(all_data.length ? (index*50 + 1) : 0) + " - " + ((index + 1)*50 < all_data.length ? (index + 1)*50 : all_data.length)}</p>
-                    </td>
-                    <td>
-                        <button onClick={() => {
-                            if ((index + 1)*50 < all_data.length) setIndex(index + 1);
-                            }}>Next
-                        </button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        </>)
+        return (
+        <div className="grid-background">
+            <table className="grid_class">
+                <thead>
+                    <tr className="top-row">
+                        <th className="grid-background-left-th" onClick={() => handleClick("location")}>
+                            {sortKey === "location" ? (!asc ? "Location\u25B4" : "Location\u25BE") : "Location"}
+                        </th>
+                        <th onClick={() => handleClick("time")}>
+                            {sortKey === "time" ? (!asc ? "Date\u25B4" : "Date\u25BE") : "Date"}
+                        </th>
+                        <th onClick={() => handleClick("price")}>
+                            {sortKey === "price" ? (!asc ? "Price\u25B4" : "Price\u25BE") : "Price"}
+                        </th>
+                        <th>
+                            Name
+                        </th>
+                        <th className="grid-background-right-th">
+                            Buy/Sell
+                        </th>
+                        <th>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {map_data(all_data, index)}
+                </tbody>
+            </table>
+            <table className="grid_class">
+                <tbody>
+                    <tr>
+                        <td className="bottom-row">
+                            <button className="sm-bruin-button" onClick={() => {
+                                if (index > 0) setIndex(index - 1);
+                                }}>Previous
+                            </button>
+                            <p>{(all_data.length ? (index*50 + 1) : 0) + " - " + ((index + 1)*50 < all_data.length ? (index + 1)*50 : all_data.length) + "/" + all_data.length}</p>
+                            <button className="sm-bruin-button" onClick={() => {
+                                if ((index + 1)*50 < all_data.length) setIndex(index + 1);
+                                }}>Next
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        )
     }else{
         return <></>
     } 
 }
 
-// Component to get location for filter and popup
+// Component to get location for filter 
 function LocationComponent({ filteredLocations, setFilteredLocations, update_query, isCreate = false, error = ""}){
     // Change default from constant value thing to db call
     const [allLocations, setAllLocation] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
@@ -489,10 +499,10 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
 
     const locs = locations.map((loc, i) => {
         return (
-        <li key={i}>
+        <div className="loc-search-item" key={i} onClick={() => updateFilteredLocations(loc)}>
+            <input checked={checkIn(loc) !== -1} type="checkbox" onChange={() => updateFilteredLocations(loc)}></input> {/* className={checkIn(loc) !== -1 ? "loc-selected" : "loc-not-selected"} */}
             <label>{loc}</label>
-            <button className={checkIn(loc) !== -1 ? "selected" : "notSelected"} onClick={() => updateFilteredLocations(loc)}>Check box</button>
-        </li>
+        </div>
         );
     })
 
@@ -523,7 +533,7 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
         let curr = []
         let n = text.length;
         for (let i = 0; i < allLocations.length; i++){
-            if (allLocations[i].length >= n && allLocations[i].substring(0, n) === text) curr.push(allLocations[i])
+            if (allLocations[i].length >= n && allLocations[i].substring(0, n).toLowerCase() === text.toLowerCase()) curr.push(allLocations[i])
         }
 
         // update current filtered locations
@@ -544,31 +554,31 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
         
     }
 
-    return <table className="margin">
+    return <table className="location-class">
         <thead>
             <tr>
                 <th>Locations</th>
             </tr>
         </thead>
         <tbody>
-            {!isCreate ? 
+            {/* {!isCreate ? 
             <tr>
-                <td>
-                    <button onClick={addAll}>Select All</button>
-                    <button onClick={() => {setFilteredLocations([]); update_query({locations: []});}}>Unselect All</button>
+                <td className="loc-top-row">
+                    <button className="loc-bruin-button" onClick={addAll}>Select All</button>
+                    <button className="loc-bruin-button" onClick={() => {setFilteredLocations([]); update_query({locations: []});}}>Unselect All</button>
                 </td>
             </tr>
-            : <></>}
-            <tr>
+            : <></>} */}
+            {/* <tr>  className="loc-outer-search" 
                 <td>
                     <SearchBar searchCallback={(e) => {updateSearch(e)}}/>
                 </td>
-            </tr>
-            <tr>
-                <td>
-                    <ul className="scroller">
+            </tr> */}
+            <tr> {/* className="loc-outer-search" */}
+                <td className="loc-list-items">
+                    {/* <ul className="scroller"> */}
                         {locs}
-                    </ul>
+                    {/* </ul> */}
                 </td>
             </tr>
             <tr>
@@ -578,69 +588,37 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
     </table>
 }
 
-function ListingLocationComponent({ locationListed, setLocationListed, locationError, setLocationError }){
+function ListingLocationComponent({ locationListed, setLocationListed, locationError }){
     // Change default from constant value thing to db call
     const [allLocations, setAllLocation] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
     const [locations, setLocations] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
 
     const locs = locations.map((loc, i) => {
         return (
-        <li key={i}>
+        <div className="loc-search-item" key={i} onClick={() => setLocationListed(loc)}>
+            <input checked={loc === locationListed} type="checkbox" onChange={() => setLocationListed(loc)}></input> {/* className={checkIn(loc) !== -1 ? "loc-selected" : "loc-not-selected"} */}
             <label>{loc}</label>
-            <button className={(loc === locationListed) ? "selected" : "notSelected"} onClick={() => {setLocationListed(loc)}}>Check box</button>
-        </li>
+        </div>
         );
     })
 
-    function updateSearch(text){
-        // find new locations
-        let curr = []
-        let n = text.length;
-        for (let i = 0; i < allLocations.length; i++){
-            if (allLocations[i].length >= n && allLocations[i].substring(0, n) === text) curr.push(allLocations[i])
-        }
-
-        // update current filtered locations
-        // probably remove but its lowkey sick af
-        let filteredCopy = locations.slice()
-        for (let i = 0; i < filteredCopy.length; i++){
-            let flag = false;
-            for (let j = 0; j < curr.length; j++){
-                if (curr[j] === filteredCopy[i]) flag = true;
-            }
-            if (!flag) {
-                filteredCopy.splice(i, 1);
-            }
-        }
-        setLocations(curr)
-        
-    }
-
-    return <table className="margin">
+    return <table className="location-class">
         <thead>
             <tr>
-                <th>Locations</th>
+                <th>Choose where you're selling the swipe:</th>
             </tr>
         </thead>
         <tbody>
-            {/* {!isCreate ? 
-            <tr>
-                <td>
-                    <button onClick={addAll}>Select All</button>
-                    <button onClick={() => {setFilteredLocations([]); update_query({locations: []});}}>Unselect All</button>
-                </td>
-            </tr>
-            : <></>} */}
-            <tr>
+            {/* <tr>
                 <td>
                     <SearchBar searchCallback={(e) => {updateSearch(e)}}/>
                 </td>
-            </tr>
+            </tr> */}
             <tr>
-                <td>
-                    <ul className="scroller">
+                <td className="loc-list-items">
+                    {/* <ul className="scroller"> */}
                         {locs}
-                    </ul>
+                    {/* </ul> */}
                 </td>
             </tr>
             <tr>
@@ -659,57 +637,30 @@ function ListingPriceComponent({isBuy, setIsBuy, priceListed, setPriceListed, pr
 
 
     return (
-        <table>
+        <table className="listing-price">
             <thead>
                 <tr>
-                    <th>Price</th>
+                    <th>How much for the swipe?</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>
-                        <button className={isBuy ? "selected-buy" : "not-selected-buy"} onClick={flipBuy}>Buy</button>
-                    </td>
-                    <td>
-                        <button className={!isBuy ? "selected-buy" : "not-selected-buy"} onClick={flipBuy}>Sell</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
                         <form onSubmit={(e) => {
                             e.preventDefault()
-                            // setPriceListed(parseInt(e.target.value));
-                            // let value = parseInt(e.target.value);
-                            // if(Number.isNaN(value)){
-                            //     setPriceError('Please input a number');
-                            //     setPriceListed(NaN); 
-                            // }else if(value < 0 || value > 100){
-                            //     setPriceError('Please input a number between 0 and 100');
-                            //     setPriceListed(NaN); 
-                            // }else{
-                            //     setPriceListed(parseInt(e.target.value)); 
-                            //     setPriceError('');
-                            // }
                             
                             }}>
                             <label>
-                                Price: $
+                                $
                                 <input type="number" defaultValue={Number.isNaN(priceListed) ? "" : priceListed} onChange={(e) => {
                                     setPriceListed(parseInt(e.target.value));
-                                    // let value = parseInt(e.target.value);
-                                    // if(Number.isNaN(value)){
-                                    //     setPriceError('Please input a number');
-                                    //     setPriceListed(NaN); 
-                                    // }else if(value < 0 || value > 100){
-                                    //     setPriceError('Please input a number between 0 and 100');
-                                    //     setPriceListed(NaN); 
-                                    // }else{
-                                    //     setPriceListed(parseInt(e.target.value)); 
-                                    //     setPriceError('');
-                                    // }
                                 }}/>
                             </label>
                         </form>
+                    </td>
+                    <td >
+                        <button className={isBuy ? "selected-buy" : "not-selected-buy"} onClick={() => setIsBuy(!isBuy)}>Buy</button>
+                        <button className={!isBuy ? "selected-buy" : "not-selected-buy"} onClick={() => setIsBuy(!isBuy)}>Sell</button>
                     </td>
                     <td>
                         <p>{priceError}</p>
@@ -720,7 +671,7 @@ function ListingPriceComponent({isBuy, setIsBuy, priceListed, setPriceListed, pr
     );
 }
 
-function ListingTimeComponent({ timeListed, setTimeListed, timeError, setTimeError }){
+function ListingTimeComponent({ timeListed, setTimeListed, timeError, setTimeError, isBuy }){
 
     function handleTimeChange(time){
         if(time){
@@ -733,10 +684,10 @@ function ListingTimeComponent({ timeListed, setTimeListed, timeError, setTimeErr
     }
 
     return (
-    <table className="margin">
+    <table className="listing-price">
         <thead>
             <tr>
-                <th>Times</th>
+                <th>{"When are you " + (isBuy ? "buying" : "selling") + "?"}</th>
             </tr>
         </thead>
         <tbody>
@@ -756,7 +707,7 @@ function ListingTimeComponent({ timeListed, setTimeListed, timeError, setTimeErr
 
 // Component to confirm the listing before you actually make it
 function ListingConfirmComponent({ locationListed, isBuy, priceListed, timeListed }){
-    return (<table>
+    return (<table className="listing-price">
         <thead>
             <tr>
                 <th>Your new listing</th>
@@ -779,77 +730,6 @@ function ListingConfirmComponent({ locationListed, isBuy, priceListed, timeListe
     </table>);
 }
 
-// function Popup({ handleClose }){
-//     const [stage, setStage] = React.useState(0)
-//     const [isBuy, setIsBuy] = React.useState(true)
-//     const [locs, setLocs] = React.useState([])
-//     const [locError, setLocError] = React.useState('')
-//     const [price, setPrice] = React.useState(8)
-//     const [rawPrice, setRawPrice] = React.useState(8)
-//     const [time, setTime] = React.useState("rn")
-//     let stages = [
-//         <LocationComponent filteredLocations={locs} setFilteredLocations={(e) => setLocs(e)} isCreate={true} error={locError}/>,
-//         <ListingPriceComponent rawCallback={(e) => setRawPrice(e)} filterCallback={(e) => setPrice(e)} buyCallback={(e) => setIsBuy(e)} isBuyDefault={isBuy} priceDefault={price}/>,
-//         <p>Choose Time</p>,
-//         <ConfirmComponent locations={locs} isBuy={isBuy} price={price} time={time}/>
-//     ]
-
-//     function nextClicked(){
-//         if (stage == 0 && locs.length != 1) 
-//             setLocError('Select a location')
-//         else if(stage == 1){
-//             if (rawPrice < 100 && rawPrice >= 0) 
-//                 setPrice(rawPrice)
-//             setStage(stage + 1)
-//         }
-//         else if (stage != stages.length - 1){
-//             setStage(stage + 1)
-//             setLocError('')
-//         }
-//         else{
-//             // Add db call to actually make new listing here
-//             // RN it just puts it in all_data
-//             all_data.push([locs[0], time, price, isBuy])
-//             handleClose()
-//         }
-            
-        
-//     }
-
-//     function backClicked(){
-//         if (stage == 0)
-//             handleClose()
-//         else
-//             setStage(stage - 1)
-//     }
-
-//     return (
-//     <div className="popup-box">
-//         <div className="box">
-//             <span className="close-icon" onClick={handleClose}>x</span>
-//             <span className="back-icon" onClick={backClicked}>{'<-'}</span>
-//             {stages[stage]}
-//             <table>
-//                 <tbody>
-//                     <tr>
-//                         <td>
-//                             <button onClick={handleClose}>Cancel</button>    
-//                         </td>
-//                         <td>
-//                             <button onClick={nextClicked}>{stage === stages.length - 1 ? "Create Listing" : "Next"}</button>
-//                         </td>    
-//                     </tr>
-//                 </tbody>
-//             </table>
-//         </div>
-//     </div>
-//     );
-// }
-
-
-
-
-
 function Popup({ stage, setStage, locationListed, setLocationListed, locationError, setLocationError, isBuy, setIsBuy, priceListed, setPriceListed, priceInput, setPriceInput,
     priceError, setPriceError, timeListed, setTimeListed, timeInput, setTimeInput, timeError, setTimeError, showPopup, setShowPopup, make_listing }){
     let stages = [
@@ -861,7 +741,7 @@ function Popup({ stage, setStage, locationListed, setLocationListed, locationErr
         priceError={priceError} setPriceError={setPriceError}/>,
         <ListingTimeComponent timeListed={timeListed} setTimeListed={setTimeListed}
         timeInput={timeInput} setTimeInput={setTimeInput}
-        timeError={timeError} setTimeError={setTimeError}/>,
+        timeError={timeError} setTimeError={setTimeError} isBuy={isBuy}/>,
         <ListingConfirmComponent locationListed={locationListed} isBuy={isBuy} priceListed={priceListed} timeListed={timeListed}/>
     ]
 
@@ -932,101 +812,6 @@ function Popup({ stage, setStage, locationListed, setLocationListed, locationErr
     );
 }
 
-// Functions used for testing purposes
-function Ophir(){
-    async function callback(){
-        let body = {
-            location: "Rendezvous",
-            time: "2023-03-10T14:05",
-            price: 10,
-            time_posted: "2023-03-8T14:05",
-            resolved: false,
-            selling: true,
-        };
-        makeRequest('/post-listing', body);
-    }
-    return (<>
-        Click to insert to DB
-        <button onClick={callback}>
-            CLICK ME!
-        </button>
-    </>);
-}
-
-
-function Combine_states({ filteredLocations, lowerPrice, upperPrice, showBuys, startTimeFilter, endTimeFilter, sortKey, asc, stage, locationListed, locationError,
- isBuy, priceListed, priceInput, priceError, timeListed, timeInput, timeError}){
-    function show_states(){
-        console.log("filteredLocations: ", filteredLocations);
-        console.log("lowerPrice: ", lowerPrice);
-        console.log("upperPrice: ", upperPrice);
-        console.log("showBuys: ", showBuys);
-        console.log("startTimeFilter: ", startTimeFilter);
-        console.log("endTimeFilter: ", endTimeFilter);
-        console.log("sortKey: ", sortKey);
-        console.log("asc: ", asc);
-
-        console.log("stage: ", stage);
-        console.log("locationListed: ", locationListed);
-        console.log("locationError: ", locationError);
-        console.log("isBuy: ", isBuy);
-        console.log("priceListed: ", priceListed);
-        console.log("priceInput: ", priceInput);
-        console.log("priceError: ", priceError);
-        console.log("timeListed: ", timeListed);
-        console.log("timeInput: ", timeInput);
-        console.log("timeError: ", timeError);
-    
-    }
-    return (<>
-        <button onClick={show_states}>
-            click me to log all states!
-        </button>
-    </>);
-}
-
-function Display_data({ all_data }){
-    function show_data(){
-        console.log("All data: ", all_data);
-    }
-    return (<>
-        <button onClick={show_data}>
-            log data
-        </button>
-    </>);
-}
-
-function Populate_data(){
-    return (<>
-        <button onClick={populate_sample_data}>
-            populate tf outta the DB
-        </button>
-    </>);
-}
-
-function curr_date(){
-    let date = new Date();
-    let year = date.getFullYear();
-    let month = date.getMonth()+1;
-    let day = date.getDate();
-    let hour = date.getHours();
-    let minute = date.getMinutes();
-
-    if(month < 10){
-        month = "0" + month;
-    }
-    if(day < 10){
-        day = "0" + day;
-    }
-    if(hour < 10){
-        hour = "0" + hour;
-    }
-    if(minute < 10){
-        minute = "0" + minute;
-    }
-
-    return (year + "-" + month + "-" + day + "T" + hour + ":" + minute);
-}
 
 
 
@@ -1153,15 +938,12 @@ function main(){
     }
     
     return <>
+        <div className="wrapper">
         <div className="div_class">
-            <BuyButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
-            <SellButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
-        </div>
-        <div className="div_class">
-            <>
+                <BuyButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
+                <SellButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
                 <FilterButton callback={() => setShowFilter(!showFilter)}/>
                 <CreateListingButton callback={() => setShowPopup(!showPopup)}/>
-            </>
         </div>
         <div>
             {showFilter ? <Filters 
@@ -1176,6 +958,11 @@ function main(){
             endTimeFilter={endTimeFilter}
             setEndTimeFilter={setEndTimeFilter}
             update_query={update_query}/> : <></>}
+        </div>
+        
+        <div>
+            <Grid sortKey={sortKey} setSortKey={setSortKey} asc={asc} setAsc={setAsc} all_data={all_data} update_query={update_query} index={index} setIndex={setIndex}/>
+        </div>
         </div>
         <div>
             {/* {showPopup ? <Popup content="Some text" handleClose={() => setShowPopup(!showPopup)}/> : <></>} */}
@@ -1192,22 +979,6 @@ function main(){
             showPopup={showPopup} setShowPopup={setShowPopup}
             make_listing={make_listing}/> : <></>}
         </div>
-        <div>
-            <Grid sortKey={sortKey} setSortKey={setSortKey} asc={asc} setAsc={setAsc} all_data={all_data} update_query={update_query} index={index} setIndex={setIndex}/>
-        </div>
-        {/* Components used for testing purposes */}
-        <Ophir></Ophir>
-        <Combine_states filteredLocations={filteredLocations} lowerPrice={lowerPrice} upperPrice={upperPrice}
-        showBuys={showBuys} startTimeFilter={startTimeFilter} endTimeFilter={endTimeFilter} sortKey={sortKey} asc={asc} stage={stage} locationListed={locationListed} locationError={locationError}
-        isBuy={isBuy} priceListed={priceListed} priceInput={priceInput} priceError={priceError} timeListed={timeListed} timeInput={timeInput} timeError={timeError}>
-            test
-        </Combine_states>
-        <Display_data all_data={all_data}>
-            log data
-        </Display_data>
-        <Populate_data>
-            populate DB
-        </Populate_data>
     </>
 }
 
