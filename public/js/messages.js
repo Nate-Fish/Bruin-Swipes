@@ -38,14 +38,17 @@ function MessageList(props) {
 
   return (
     <div className="message-list">
-      {currentConversation.messages.map((message, index) => {
-        const currentSender = message.sender === currentUser ? "You" : profiles[message.sender].name;
+      {currentConversation.messages.map((message, index) => { 
+        const currentSender = message.sender === currentUser ? "" : profiles[message.sender].name;
         const showSender = message.sender !== prevSender;
         prevSender = message.sender;
         return (
-          <div key={message.id} className={message.sender === currentUser ? "message-right" : "message-left"}>
+          <div key={index} className={message.sender === currentUser ? "message-right" : "message-left"}>
             {showSender && <div className="message-sender">{currentSender}</div>}
-            <div className={`message-text ${message.sender === currentUser ? "message-right-text" : "message-left-text"}`}>{message.text}</div>
+            <div className={`message-text ${message.sender === currentUser ? "message-right-text" : "message-left-text"}`}>
+              {message.text}
+              <span className="message-time" title={new Date(message.time).toLocaleString()}>{new Date(message.time).toLocaleTimeString()}</span>
+            </div>
           </div>
         );
       })}
@@ -56,10 +59,11 @@ function MessageList(props) {
 function ChatHeader(props) {
   const { conversation } = props;
   // TODO add link to profile page using email
+  let link = "profile.html?email=" + conversation.email;
   return (
     <div className = "image-header">
-      <h2><img src={conversation.avatar} alt="conversation avatar" style={{"maxWidth" : "50px"}}/> 
-      <a className="profile-link" href="{'profile.html' + conversation.email}">{'\t' + conversation.name}</a> 
+      <h2><img src={conversation.avatar} alt="conversation avatar" style = {{"maxWidth" : "50px", "maxHeight": "50px", "borderRadius" : "25%"}} /> 
+      <a className="profile-link" href= {link} >{'\t' + conversation.name}</a> 
       </h2>
     </div>
   );
@@ -81,7 +85,12 @@ function ConversationList(props) {
           <div className="conversation-details">
             <div className="preview-name">
               <h3>{conversation.name}</h3> </div>
-            <p className="message">{conversation.messages[conversation.messages.length - 1].text.substring(0, 30)}...</p>
+            <p className="message">
+    {conversation.messages[conversation.messages.length - 1].text.length > 30
+      ? `${conversation.messages[conversation.messages.length - 1].text.substring(0, 30)}...`
+      : conversation.messages[conversation.messages.length - 1].text
+    }
+  </p>
             <div className = "preview-time"> 
             <p>{epochToPST(conversation.messages[conversation.messages.length - 1].time)}</p> 
               </div>
@@ -103,10 +112,12 @@ let globalConversations = [];
 let signed;
 let render;
 let globalConversationIndex = null;
+let oldGlobalConversationIndex = 0;
+let amountRenders = 0; 
 
 function App() {
   const [conversations, setConversations] = React.useState(globalConversations);
-  const [curConversationIndex, setCurConversationIndex] = React.useState(null);
+  const [curConversationIndex, setCurConversationIndex] = React.useState(0);
   globalConversationIndex = curConversationIndex;
   render = setConversations;
   const handleSend = async (message) => {
@@ -179,8 +190,12 @@ function formatConversations (conversations) {
   let oldLength = formattedConversations[globalConversationIndex].messages.length;
   let newLength = globalConversations[globalConversationIndex].messages.length;
   globalConversations = formattedConversations;
-  if (globalConversationIndex !== null && newLength !== oldLength) {
-    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200) 
+  if (globalConversationIndex !== null && newLength !== oldLength && globalConversationIndex) {
+    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200);
+  }
+  if (oldGlobalConversationIndex != globalConversationIndex) {
+    oldGlobalConversationIndex = globalConversationIndex;
+    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200); 
   }
 }
 
