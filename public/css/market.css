@@ -1,12 +1,14 @@
 /* Market stuff */
 /* SinglePriceComponent */
-.selected-buy {
-    box-shadow: 5px 5px 10px 2px rgba(0, 0, 0, .8);
-    background-color: #d8f2df;
+.not-selected-buy {
+    box-shadow: 5px 5px 10px 1px rgba(0, 0, 0, .8);
+    background-color: #fcfcfc;
+    font-size: 13pt;
 }
 
-.not-selected-buy {
-    background-color: #96a89b;
+.selected-buy {
+    background-color: #797979;
+    font-size: 13pt;
 }
 
 .centered {
@@ -21,21 +23,354 @@
 /* Test */
 .div_class {
     display: flex;
-    justify-content: space-between;
-    max-width: 200px;
+    justify-content: space-evenly;
     margin: 0 auto;
     padding: 10px 0;
 }
 
-.temp {
+.filter_class {
     display: flex;
     justify-content: center;
+    max-width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
+    padding: 0; 
+    align-items: center;
+    /* background-color:#60aae6; */
+    border-radius: 15px;
+    /* margin-left:auto; 
+    margin-right:auto; */
+}
+
+/* .listing-time {
+  padding-top: 15px;
+}
+.listing-time td {
+  font-size: 20px;
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+.listing-time th {
+  padding-bottom: 10px;
+  font-size: 20px;
+}
+.listing-time label input {
+  font-size: 15px;
+} */
+
+.listing-price {
+  padding-top: 15px;
+}
+
+.listing-price td {
+  /* font-size: 20px; */
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+
+.listing-price label, input{
+  font-size: 15px;
+}
+
+.listing-price th {
+  padding-bottom: 10px;
+  font-size: 20px;
+}
+
+.filter-price {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.filter-price th {
+  padding-bottom: 10px;
+  font-size: 20px;
+}
+
+.location-class {
+  border-collapse: collapse;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.location-class th {
+  font-size: 20px;
+  padding-bottom: 10px;
+}
+
+.loc-top-row {
+  display: flex;
+  justify-content: space-between;
+  max-width: fit-content;
+  margin: 0 auto;
+  padding: 5px 0;
+
+}
+
+.loc-search-bar {
+  font-size: 20px;
+}
+
+.loc-outer-search {
+  background-color: #51a0e0;
+  border-radius: 15px;
+}
+
+.loc-bruin-button {
+  border: 2px solid white;
+  background-color: #6cb5ec;
+  color: white;
+  border-radius: 15px;
+  padding: 0.3rem 0.8rem;
+  transition: background-color 0.25s;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.loc-bruin-button:hover {
+  background-color: white;
+  color: #6cb5ec;
+}
+
+.loc-list-items {
+  column-count: 3;
+}
+
+.loc-search-item {
+    display: flex;
+    /* justify-content: space-between; */
     max-width: 200px;
     margin: 0 auto;
-    padding: 0;
-    /* align-items: center; */
+    padding: 5px 0;
 }
+
+.loc-selected {
+  background-color: yellow;
+  padding-right: 10px;
+}
+
+.loc-not-selected {
+  background-color: #f1f1f1;
+  padding-right: 10px;
+}
+
+
+
+/* .location-class tr {
+  margin-right: auto;
+  margin-left: auto;
+} */
 
 .margin {
     padding: 30px;
+}
+
+.grid_class {
+    /* display: flex;
+    justify-content: space-between;
+    max-width: fit-content;
+    margin: 0 auto;
+    padding: 10px 0; */
+    margin-left:auto; 
+    margin-right:auto;
+    /* margin: 0 auto; */
+    /* margin-right: 0;
+    margin-left: 0; */
+    border-collapse: collapse;
+    max-width: fit-content;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+
+
+/* Something to think about in the future */
+/* tbody td{
+  padding: 5px;
+} */
+
+.grid-background {
+  background-color: #60aae6;
+  max-width: max-content;
+  margin-left:auto;
+  margin-right:auto;
+  border-radius: 8px;
+  border-color:#000000;
+  border-width: 10px;
+  /* justify-content: start; */
+}
+
+.grid-background-left-th {
+  padding-left: 10px;
+}
+
+.grid-background-right-th {
+  padding-right: 10px;
+}
+
+.top-row{
+  padding: 20px 10px;
+  font-size: 22px;
+}
+
+.bottom-row {
+  columns: 3;
+  justify-content: space-between;
+  text-align: center;
+  padding-top: 5px;
+}
+
+
+.alternated-row {
+  background-color: #aecde6;
+  /* column-fill: auto; */
+  /* border-radius: 3px;  */
+  /* border: 15px solid black; */
+}
+
+.alternated-row td {
+  padding: 15px 10px;
+}
+
+.other-row {
+  background-color: #DBEDFB;
+  /* column-fill: auto; */
+  /* border-radius: 3px; */
+  /* border: 1px solid black; */
+}
+
+.other-row td {
+  padding: 15px 10px;
+}
+
+.colored {
+  background-color: #84c2f5;
+}
+  
+/* LocationComponent */
+
+.scroller {
+  width: 200px;
+  height: 50px;
+  overflow: auto;
+}
+  
+  /* Popup style */
+  .popup-box {
+    position: fixed;
+    background: #00000050;
+    width: 100%;
+    height: 100vh;
+    top: 0;
+    left: 0;
+  }
+  
+  .box {
+    position: relative;
+    width: 70%;
+    margin: 0 auto;
+    height: auto;
+    max-height: 70vh;
+    margin-top: calc(100vh - 85vh - 20px);
+    background: #fff;
+    border-radius: 4px;
+    padding: 20px;
+    border: 1px solid #999;
+    overflow: auto;
+  }
+  
+  .box table{
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .close-icon {
+    content: 'x';
+    cursor: pointer;
+    position: fixed;
+    right: calc(15% - 30px);
+    top: calc(100vh - 85vh - 33px);
+    background: #ededed;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    line-height: 20px;
+    text-align: center;
+    border: 1px solid #999;
+    font-size: 20px;
+  }
+  
+  .back-icon {
+    content: '<-';
+    cursor: pointer;
+    position: fixed;
+    left: calc(15% - 30px);
+    top: calc(100vh - 85vh - 33px);
+    background: #ededed;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    line-height: 20px;
+    text-align: center;
+    border: 1px solid #999;
+    font-size: 20px;
+  }
+
+  /* Button style taken from default.css */
+  
+.bruin-button {
+  border: 2px solid white;
+  background-color: #2774AE;
+  color: white;
+  border-radius: 15px;
+  padding: 0.3rem 0.8rem;
+  transition: background-color 0.25s;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.bruin-button:hover {
+  background-color: white;
+  color: #2774AE;
+}
+
+/* Smaller button for listings */
+
+.sm-bruin-button {
+  border: 2px solid white;
+  background-color: gold;
+  /* color: white; */
+  border-radius: 15px;
+  padding: 0.3rem 0.8rem;
+  transition: background-color 0.25s;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.sm-bruin-button:hover {
+  background-color: white;
+  color: gold;
+}
+
+/* Background color for page */
+.background_color{
+  background-color: #DBEDFB;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.wrapper{
+  max-width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }
