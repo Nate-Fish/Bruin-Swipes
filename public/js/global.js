@@ -33,7 +33,15 @@ document.head.append(quickCreate("link", {
 /**
  * Draw the navigation at the top of body
  */
-function drawNav() {
+async function drawNav() {
+
+    let signedIn = await checkSignedIn();
+
+    for (func of signInQueue) {
+        func(signedIn);//{isSignedIn: false, name: null};
+    }
+
+    if (signedIn.isSignedIn) {
     document.body.innerHTML = `<div id="mySidebar" class="sidebar">
         <a href="javascript:void(0)" class="closebtn" onclick='closeNav()'>&times;</a>
         <a href="index.html">Home</a>
@@ -42,6 +50,17 @@ function drawNav() {
         <a href="messages.html">Messages</a>
         </div>` +
         document.body.innerHTML;
+    } else {
+        document.body.innerHTML = `<div id="mySidebar" class="sidebar">
+        <a href="javascript:void(0)" class="closebtn" onclick='closeNav()'>&times;</a>
+        <a href="index.html">Home</a>
+        <a href="sign.html">Profile</a>
+        <a href="sign.html">Market</a>
+        <a href="sign.html">Messages</a>
+        </div>` +
+        document.body.innerHTML;
+    }
+
 
     // signArea below is attached to the script in initAccountListeners
     document.body.innerHTML = `<div id="topMenu">
