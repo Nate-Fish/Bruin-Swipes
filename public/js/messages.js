@@ -88,7 +88,12 @@ function ConversationList(props) {
           <div className="conversation-details">
             <div className="preview-name">
               <h3>{conversation.name}</h3> </div>
-            <p className="message">{conversation.messages[conversation.messages.length - 1].text.substring(0, 30)}...</p>
+            <p className="message">
+    {conversation.messages[conversation.messages.length - 1].text.length > 30
+      ? `${conversation.messages[conversation.messages.length - 1].text.substring(0, 30)}...`
+      : conversation.messages[conversation.messages.length - 1].text
+    }
+  </p>
             <div className = "preview-time"> 
             <p>{epochToPST(conversation.messages[conversation.messages.length - 1].time)}</p> 
               </div>
