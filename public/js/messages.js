@@ -56,9 +56,6 @@ function MessageList(props) {
   );
 }
 
-
-
-
 function ChatHeader(props) {
   const { conversation } = props;
   // TODO add link to profile page using email
@@ -116,6 +113,7 @@ let signed;
 let render;
 let globalConversationIndex = null;
 let oldGlobalConversationIndex = 0;
+let amountRenders = 0; 
 
 function App() {
   const [conversations, setConversations] = React.useState(globalConversations);
@@ -193,11 +191,11 @@ function formatConversations (conversations) {
   let newLength = globalConversations[globalConversationIndex].messages.length;
   globalConversations = formattedConversations;
   if (globalConversationIndex !== null && newLength !== oldLength && globalConversationIndex) {
-    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200) 
+    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200);
   }
   if (oldGlobalConversationIndex != globalConversationIndex) {
     oldGlobalConversationIndex = globalConversationIndex;
-    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200) 
+    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200); 
   }
 }
 
@@ -208,14 +206,6 @@ async function fetchLoop() {
 }
 async function main(signedIn) {
   signed = signedIn;
-  // TODO show a warning if the user is not signed in and redirect to the sign in page
-  // const urlSearchParams = new URLSearchParams(window.location.search);
-  // const params = Object.fromEntries(urlSearchParams.entries());
-  // let email = params.email || signedIn.email;
-  // view(email, signedIn.email);
-  // const params = Object.fromEntries(urlSearchParams.entries());
-  // let email = params.email || signedIn.email;
-  // view(email, signedIn.email);
   formatConversations(await getConversations(signed));
   root.render(React.createElement(App));
   fetchLoop();
