@@ -1,6 +1,15 @@
-body:not("#topMenu") {
-font-family: Helvetica;
+/* body:not("#topMenu") {
+  font-family: Helvetica;
+} */
+body {
+  font-family: Helvetica;
 }
+
+/* make the top menu font color white only on the messages page */
+#topMenu {
+  color: white;
+}
+
 .search-bar {
     display: flex;
     justify-content: center;
@@ -113,6 +122,8 @@ font-family: Helvetica;
   height: 81vh;
 }
 .messages-title {
+  top: 0;
+  position: sticky;
   display: flex;
   flex-flow: column-reverse;
   color: #fff;
@@ -125,6 +136,7 @@ font-family: Helvetica;
   margin: auto;
   border: solid 3px #FFD100;
   border-right: none;
+  border-left:none;
   border-image: linear-gradient(to right, #FFB81C, #FFC72C) 1;
 }
 
