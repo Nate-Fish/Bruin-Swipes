@@ -121,6 +121,7 @@ body {
   overflow-y: scroll;
   height: 81vh;
 }
+
 .messages-title {
   top: 0;
   position: sticky;
@@ -132,7 +133,7 @@ body {
   text-align: left;
   height: 10vh;
   width: 100%;
-  text-align:  center;
+  text-align: center;
   margin: auto;
   border: solid 3px #FFD100;
   border-right: none;
@@ -169,6 +170,7 @@ body {
   border-radius: 5px;
   padding: 10px;
 }
+
 .message-right-text {
   background-color: #8BB8E8;
 }
@@ -206,7 +208,7 @@ body {
   top: 0;
   position: sticky;
   height: 10vh;
-  background: linear-gradient(to right, #005587 , #8BB8E8);
+  background: linear-gradient(to right, #005587, #8BB8E8);
   border: solid 3px #FFD100;
   border-image: linear-gradient(to right, #FFC72C, #FFFFFF) 1;
   border-left: none;

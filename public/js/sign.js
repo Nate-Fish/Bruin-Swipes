@@ -87,7 +87,7 @@ function buttonSetup() {
         let last = getElem('signup-last').value;
         let email = getElem('signup-email').value;
         let password = getElem('signup-password').value;
-        let confirm = getElem('signup-password').value;
+        let confirm = getElem('signup-confirm').value;
         
         if (password != confirm) {
             message.innerHTML = "Passwords do not match";

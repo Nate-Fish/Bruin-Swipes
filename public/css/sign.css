@@ -7,12 +7,12 @@ body {
 
 h1 {
   color: #FFFFFF;
-  text-align:center;
+  text-align: center;
 }
 
 button {
   border-color: #FFFFFF;
-  color:#FFFFFF;
+  color: #FFFFFF;
   font-family: "Helvetica", "Arial", sans-serif;
   background-color: #2774AE;
   border-style: solid;
@@ -27,7 +27,7 @@ button:hover {
 }
 
 .top-page {
-  color:#2774AE;
+  color: #2774AE;
 }
 
 .login-postion {
@@ -45,14 +45,14 @@ button:hover {
 }
 
 .back-home {
-  display: flex; 
-  flex-flow:column nowrap; 
+  display: flex;
+  flex-flow: column nowrap;
   align-items: center;
 }
 
 .back-home-style {
   border-color: #FFFFFF;
-  color:#FFFFFF;
+  color: #FFFFFF;
   font-family: "Helvetica", "Arial", sans-serif;
   background-color: #2774AE;
   font-size: 100%;
@@ -70,16 +70,16 @@ button:hover {
 }
 
 .buttons-primary {
-  list-style: none; 
-  padding: 0; 
+  list-style: none;
+  padding: 0;
   margin: 0 auto 100px auto;
 }
 
 .buttons {
-  float:left; 
-  width: 48%; 
-  text-align:center; 
-  cursor: pointer;  
+  float: left;
+  width: 48%;
+  text-align: center;
+  cursor: pointer;
   border-color: #FFFFFF;
 }
 
@@ -92,18 +92,18 @@ button:hover {
 }
 
 .column {
-  display:flex; 
-  flex-flow: column nowrap; 
-  justify-content: space-evenly; 
-  width:75%; 
-  grid-gap:20px; 
-  margin:auto
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: space-evenly;
+  width: 75%;
+  grid-gap: 20px;
+  margin: auto
 }
 
-.name-row{
-  display:flex; 
-  flex-flow: row nowrap; 
-  justify-content: space-between; 
-  width: 75%; 
+.name-row {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  width: 75%;
   margin: 0 auto 20px auto;
 }

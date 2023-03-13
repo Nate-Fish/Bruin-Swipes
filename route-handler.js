@@ -4,11 +4,21 @@
  */
 
 let account_routes = require('./account-routes.js');
+let logger = new (require('./logging.js'))("logs/routes");
 
 function routeHandler (app) { // Default export (bottom of file)
+    // Setup logging for all routes
+    app.use((req, res, next) => {
+        // Avoid routes that are called too often
+        if (!(req.originalUrl == "/get-messages" || req.originalUrl == "/query-listings")) {
+            logger.log(`Route Called: ${req.originalUrl}, Body: ` + JSON.stringify(req.body));
+        }
+
+        next();
+    });
+    
     setup_get_routes(app);
     setup_post_routes(app);
-
     console.log("Routes have been setup!");
 }
 

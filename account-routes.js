@@ -14,7 +14,7 @@
 const mongo = require('./mongodb-library.js');
 const accounts = require('./accounts.js');
 const fs = require('fs');
-const {emailHandler, notificationHandler} = require('./email-service.js');
+const { emailHandler, notificationHandler } = require('./email-service.js');
 
 
 // HELPER FUNCTIONS
@@ -33,7 +33,7 @@ const {emailHandler, notificationHandler} = require('./email-service.js');
  * @returns A verify_session response or false
  */
 async function test_signed(req, res) {
-    let response = {isSignedIn: false, "status": "fail", "message": "You are not signed in."};
+    let response = { isSignedIn: false, "status": "fail", "message": "You are not signed in." };
     if (req.cookies == undefined || req.cookies["session"] == undefined) {
         res.send(response);
         return false;
@@ -80,9 +80,7 @@ async function sign_up(req, res) {
 
     if (response["accountCreated"]) {
         // Send an email to the client here.
-
-        emailHandler.certify_email(req.protocol + "://" + req.get('host'), 
-        response["name"], response["email"], response["user_id"]);
+        emailHandler.certify_email(response["name"], response["email"], response["user_id"]);
     }
     res.send({
         "info": response["info"],
@@ -139,7 +137,7 @@ async function login(req, res) {
  *      info: [STRING]
  * }
  */
-async function logout (req, res) {
+async function logout(req, res) {
     try {
         let x = req.cookies["session"];
     } catch (error) {
@@ -195,8 +193,8 @@ async function certify(req, res) {
     let email = req.query.email;
 
     let certify_response = await accounts.certify(user_id, email);
-    
-    res.send(certify_response || {status: "fail"});
+
+    res.send(certify_response || { status: "fail" });
 
 }
 
@@ -208,11 +206,11 @@ async function certify(req, res) {
  *      email: {String}
  * }
  */
-async function fetch_profile (req, res) {
+async function fetch_profile(req, res) {
     let email = req.query.email;
     let response = await accounts.fetch_profile(email);
 
-    res.send(response|| {status: "fail"});
+    res.send(response || { status: "fail" });
 }
 
 /**
@@ -232,7 +230,7 @@ async function post_profile(req, res) {
     if (!verify_response) {
         return;
     }
-    
+
     let params = {
         bio: req.body.bio,
         img: req.body.img
@@ -255,7 +253,7 @@ async function read_notifications(req, res) {
         return;
     }
     await notificationHandler.readAll(verify_response["user_id"]);
-    res.send({"status": "success"});
+    res.send({ "status": "success" });
 }
 /**
  * Send a message.
@@ -269,18 +267,29 @@ async function read_notifications(req, res) {
  * @returns 
  */
 async function send_messages(req, res) {
-        // Expect res to have body.data attribute
-        let verify_response = await test_signed(req, res);
-        if (!verify_response) {
-            return;
-        }
-        // Grab the email of the current user using account_attribute
-        let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
-        // User sends in their req.body: req.body.email, req.body.message ONLY
-        let response = await accounts.send_messages(email, req.body.email, req.body.message);
+    // Expect res to have body.data attribute
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    // Grab the email of the current user using account_attribute
+    let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
+    // User sends in their req.body: req.body.email, req.body.message ONLY
+    let response = await accounts.send_messages(email, req.body.email, req.body.message);
 
-        res.send(response);
-        // Assume that the messages array for any conversation has length >= 1 always
+    res.send(response);
+    // Assume that the messages array for any conversation has length >= 1 always
+}
+
+async function get_messages(req, res) {
+    // Expect res to have body.data attribute
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+    let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
+    let response = await accounts.get_messages(email);
+    res.send(response);
 }
 
 /**
@@ -324,18 +333,13 @@ async function send_messages(req, res) {
  * 
  */
 async function get_listings(req, res) {
-    // Cookies check
-    let response = {"data": null};
-    if (req.cookies == undefined || req.cookies["session"] == undefined) {
-        res.send(response);
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
         return;
     }
-    let verify_response = await accounts.verify_session(req.cookies["session"]);
     
-    if (verify_response["valid"]) {
-        // The verify response provides the user's id
-        response = await accounts.query_listings(verify_response["user_id"], req);
-    }
+    // The verify response provides the user's id
+    response = await accounts.query_listings(verify_response["user_id"], req);
     // Always send a response
     res.send(response);
 }
@@ -356,31 +360,13 @@ async function get_listings(req, res) {
  */
 async function post_listing(req, res) {
     // Expect res to have body.data attribute
-    let response = {"status": "fail"};
-    if (req.cookies == undefined || req.cookies["session"] == undefined) {
-        res.send(response);
-        return;
-    }
-    let verify_response = await accounts.verify_session(req.cookies["session"]);
-    
-    // MAKE SURE YOUR RESPONSES ARE STANDARDIZED!!!
-    if (!verify_response["valid"]) {
-        res.send(response);
-    }
-    
-    await accounts.insert_listing(verify_response["user_id"], req);
-    res.send({"status": "success"});
-}
-
-async function get_messages(req, res) {
-    // Expect res to have body.data attribute
     let verify_response = await test_signed(req, res);
     if (!verify_response) {
         return;
     }
-    let email = await accounts.get_account_attribute(verify_response["user_id"], "email");
-    let response = await accounts.get_messages(email);
-    res.send(response);
+
+    await accounts.insert_listing(verify_response["user_id"], req);
+    res.send({ "status": "success" });
 }
 
 module.exports = {

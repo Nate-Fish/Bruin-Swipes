@@ -13,12 +13,12 @@ console.log("Welcome to BruinSwipes! Setting up the server... (Close the server 
 const cookieParser = require('cookie-parser');
 
 // Attempt to import express
-let express = require('express');
+let express;
 try {
     express = require('express');
 } catch (err) {
     console.log("Error on importing Express. You likely did not run 'npm install' first.");
-    process.exit(0);
+    process.exit(1);
 }
 
 // Load the mongo library and initialize the client
@@ -33,7 +33,8 @@ app.use(express.static('public')); // By default, serve static files from the pu
 app.use(express.json({limit: "50mb"})); // Allow JSON GET/POST requests
 
 // Listen on default port or 3000 by default
-let server = app.listen(process.env.PORT || 3000, () => {
+let port = process.env.PORT || 3000;
+let server = app.listen(port, () => {
     console.log("Starting to listen at http://localhost:" + server.address().port);
 
     mongo.connectClient(); // Connect here, so that atleast the serving of pages is ready
@@ -44,6 +45,7 @@ let server = app.listen(process.env.PORT || 3000, () => {
 process.on('SIGINT', () => {
     mongo.closeClient();
     console.log("Closing down BruinSwipes server...");
+    logger.log("Closed Server");
     process.exit(0);
 });
 
@@ -52,7 +54,9 @@ process.on('SIGINT', () => {
 // -------------------------------------------------------------------
 
 // We do all "email handling" where it is necessary to do so
+var ip = require("ip");
 let {emailHandler} = require('./email-service.js');
+emailHandler.setRoute(ip.address() + ":" + port);
 
 let route_handler = require('./route-handler.js');
 route_handler(app);
@@ -63,3 +67,7 @@ route_handler(app);
 // END ROUTES & EMAIL SERVICE CODE
 // -------------------------------------------------------------------
 
+
+// MISCELLANEOUS IMPORTS
+let logger = new (require('./logging.js'))("logs/server");
+logger.log("Starting server...");

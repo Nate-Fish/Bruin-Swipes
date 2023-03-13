@@ -1,12 +1,19 @@
+/**
+ * Accounts.js
+ * 
+ * Holds functions to manipulate database information relative
+ * to accounts and perform functions specific to user data.
+ */
+
 // First import the mongo library
 // Assume that the client has already been connected and that disconnect is handled by caller
 const mongo = require('./mongodb-library.js');
 // Import the crypto module, used for encrypting a given username and password
 const crypto = require('crypto');
-const fs = require('fs');;
 const { ObjectId } = require('mongodb'); // Necessary to interpret mongodb objectids
-const { query } = require('express');
-const { update_docs } = require('./mongodb-library.js');
+const { notificationHandler } = require('./email-service.js');
+const Logger = require('./logging.js');
+let logger = new Logger("logs/accounts");
 
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
@@ -134,6 +141,7 @@ async function sign_up(first, last, password, email) {
         //Send the data to the database (Accounts/accounts collection)
         new_account = await mongo.add_data(saveMe, "Accounts", "accounts");
         user_id = new_account["insertedId"].toString();
+        logger.log(`New Account Created: ${user_id} ${first} ${last} ${email}`);
         // Save a new profile for the user
         saveMe = {
             "time": (new Date()).getTime(),
@@ -268,6 +276,7 @@ async function login(email, password) {
         user_id = account["_id"].toString();
         message = "LOGIN SUCCESSFUL";
         loggedIn = true;
+        logger.log(`Logged In Account: ${user_id} ${email}`);
     }
     return {
         info: message,
@@ -314,13 +323,13 @@ async function certify(user_id, email) {
         // If the ID is not valid object ID in the first place, we immediately exit.
         let _id = null;
         try {
-            id = new ObjectId(user_id);
+            _id = new ObjectId(user_id);
         } catch (error) {
             info = "UserID is of incorrect format."
             break breakMe;
         }
 
-        let my_account = await mongo.get_doc({ "_id": id }, "Accounts", "accounts");
+        let my_account = await mongo.get_doc({ "_id": _id }, "Accounts", "accounts");
         if (my_account == null) {
             info = "Account with matching ID does not exist."
             break breakMe;
@@ -329,8 +338,10 @@ async function certify(user_id, email) {
             info = "Inputted ID and email combo is incorrect."
             break breakMe;
         }
+        logger.log(`Certified Account: ${user_id} ${email}`);
+
         // Update the certified status
-        await mongo.update_docs({ "_id": id }, { $set: { "certified": true } }, "Accounts", "accounts");
+        await mongo.update_docs({ "_id": _id }, { $set: { "certified": true } }, "Accounts", "accounts");
         info = "Certification success. Please login through the login page.";
         certified = true;
     } catch (err) { };
@@ -342,55 +353,65 @@ async function certify(user_id, email) {
 }
 
 // write function to send messages
-async function send_messages(sender, recipient, contents) { 
-    let response = ({"status": "fail"})
+async function send_messages(sender, recipient, contents) {
+    let response = ({ "status": "fail" })
     try {
         // Two Cases (Below, do this in accounts.js)
         // Case 1: New Conversation, use mongo.add_data to add the new document for the conversation, fill in the message
         // To query the conversation use {$all : {people: [EMAIL1, EMAIL2]}} 
-        if (sender == recipient) {return response;}
-        if (contents == "") {return response;}
-        if (contents.length > 1000) {return response;}
-        if (sender == null || recipient == null) {return response;}
-        if (sender == "" || recipient == "") {return response;}
+        if (sender == recipient) { return response; }
+        if (contents == "") { return response; }
+        if (contents.length > 1000) { return response; }
+        if (sender == null || recipient == null) { return response; }
+        if (sender == "" || recipient == "") { return response; }
         // check if recipient email is valid
-        let recipient_account = await mongo.get_doc({email: recipient}, "Accounts", "accounts");
-        if (recipient_account == null) {return response;}
-        let conversation = await mongo.get_doc({people: {$all : [sender, recipient]}}, "Messages", "messages");
-        if(conversation == null) {
+        let recipient_account = await mongo.get_doc({ email: recipient }, "Accounts", "accounts");
+        if (recipient_account == null) { return response; }
+        let conversation = await mongo.get_doc({ people: { $all: [sender, recipient] } }, "Messages", "messages");
+        if (conversation == null) {
             await mongo.add_data({
                 people: [sender, recipient],
                 messages: [{
-                sender: sender,
-                contents: contents,
-                time: (new Date()).getTime()
+                    sender: sender,
+                    contents: contents,
+                    time: (new Date()).getTime()
                 }]
             }, "Messages", "messages");
-             response.status = "success";
+            logger.log(`New conversation: ${sender} ${recipients}`);
+
+            // Send notification to user
+            notificationHandler.new_conversation(sender, recipient);
+            response.status = "success";
         }
         // Case 2: Existing Conversation, use mongo.update_docs to update the conversation, fill in the message
         else {
-            await mongo.update_docs({people: {$all :[sender, recipient]}}, {$push: {messages: {
-                sender: sender,
-                contents: contents,
-                time: (new Date()).getTime()
-            }}}, "Messages", "messages");
+            await mongo.update_docs({ people: { $all: [sender, recipient] } }, {
+                $push: {
+                    messages: {
+                        sender: sender,
+                        contents: contents,
+                        time: (new Date()).getTime()
+                    }
+                }
+            }, "Messages", "messages");
+            // Update the notification count
+            notificationHandler.increment_conversation_cron(recipient, sender);
             response.status = "success";
         }
-    } catch (error) {console.log("ERROR OCCURRED IN SENDING MESSAGES: " + error.message)}
+    } catch (error) { console.log("ERROR OCCURRED IN SENDING MESSAGES: " + error.message) }
     return response;
-  }
+}
 
 /**
  * Get messages uses user email to get all messages for that user. 
  * @param {string} sender sender email
  * @returns {array} array of all messages that the user has sent or received
  */
-async function get_messages (sender) {
-    let response = {"status": "fail"};
+async function get_messages(sender) {
+    let response = { "status": "fail" };
     try {
-        response = await mongo.get_data( {people : sender}, "Messages", "messages");
-    } catch (error) {console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message)}
+        response = await mongo.get_data({ people: sender }, "Messages", "messages");
+    } catch (error) { console.log("ERROR OCCURRED IN RETRIEVING MESSAGES: " + error.message) }
     return response;
 }
 
@@ -423,6 +444,7 @@ async function get_messages (sender) {
  * }
  * 
  */
+listing_logger = new Logger("logs/listings");
 async function query_listings(user_id, req) {
     //unpack req into query elements
     let locations = req.body.locations;
@@ -434,15 +456,16 @@ async function query_listings(user_id, req) {
     let order_by = req.body.sort.order_by;
     let asc = req.body.sort.asc;
 
-    console.log("Query received ->");
-    console.log("locations: ", locations);
-    console.log("price_min: ", price_min);
-    console.log("price_max: ", price_max);
-    console.log("time_min: ", time_min);
-    console.log("time_max: ", time_max);
-    console.log("selling: ", selling);
-    console.log("order_by: ", order_by);
-    console.log("asc: ", asc);
+
+    listing_logger.log(`Query received ->
+    locations: ${locations}
+    price_min: ${price_min}
+    price_max: ${price_max}
+    time_min: ${time_min}
+    time_max: ${time_max}
+    selling: ${selling}
+    order_by: ${order_by}
+    asc: ${asc}`);
 
     let response = {data: "No results match your filter. Try broadening your search!"};
     breakTry: try {
@@ -458,7 +481,7 @@ async function query_listings(user_id, req) {
             for(let i = 0; i < locations.length; i++){
                 loc_query.$or.push({location: locations[i]});
             }
-            console.log("Locations query: ", loc_query);
+            listing_logger.log("Locations query: ", loc_query);
             query.$and.push(loc_query);
         }
 
@@ -505,12 +528,12 @@ async function query_listings(user_id, req) {
         //a resolved listing is one where the poster has already sold the swipe, or the time window has expired
         query.$and.push({resolved: false});
 
-        console.log("Submitted Query: ", query);
+        listing_logger.log("Submitted Query: ", JSON.stringify(query));
 
 
         //if order_by exists, sort the results based on the given attribute
         if(order_by !== undefined){
-            console.log("Ordered query");
+            listing_logger.log("Ordered query");
             results = await mongo.get_data(query, "Listings", "listings", order_by, asc);
         }else{
             //if order_by is undefined, don't sort
@@ -522,7 +545,7 @@ async function query_listings(user_id, req) {
         }
         response.data = results;
     } catch (error) {} // error handling if needed
-    console.log("Response: ", response);
+    listing_logger.log("Response: ", JSON.stringify(response));
     return response;
 }
 
@@ -541,12 +564,13 @@ async function query_listings(user_id, req) {
  */
 async function insert_listing(user_id, req) {
     //grab the user_id, first, and last names from the user_id given and store it in user JSON
-    let user_data = (await mongo.get_data({"_id": new ObjectId(user_id)}, "Accounts", "accounts"))[0];
+    let user_data = await mongo.get_doc({"_id": new ObjectId(user_id)}, "Accounts", "accounts");
     let user = {
         user_id: user_data._id,
         firstname: user_data.first,
         lastname: user_data.last
     };
+    listing_logger.log(`Create new listing: ${JSON.stringify(user)}`);
     let listing = req.body;
     listing["user"] = user;
     let response = await mongo.add_data(listing, database = "Listings", collection = "listings");
@@ -597,10 +621,11 @@ async function post_profile(user_id, params) {
         if (update == {}) {
             break breakMe;
         }
-        update = {$set: update};
+        logger.log(`Updating profile: ${user_id} ${JSON.stringify(update)}`);
+        update = { $set: update };
         let result = await mongo.update_docs(filter, update, "Accounts", "profiles");
         result.modifiedCount == 1 && (response.status = "success");
-    } catch (error) {console.error(error)}
+    } catch (error) { console.error(error) }
     return response;
 }
 
