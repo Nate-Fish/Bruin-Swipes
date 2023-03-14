@@ -31,9 +31,9 @@ try {
 
 // Constants for gmail
 const SCOPES = ['https://mail.google.com/',
-'https://www.googleapis.com/auth/gmail.addons.current.action.compose',
-'https://www.googleapis.com/auth/gmail.compose',
-'https://www.googleapis.com/auth/gmail.modify'];
+    'https://www.googleapis.com/auth/gmail.addons.current.action.compose',
+    'https://www.googleapis.com/auth/gmail.compose',
+    'https://www.googleapis.com/auth/gmail.modify'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
@@ -147,11 +147,12 @@ class emailService {
      */
     async send_email(recipients, subject, body) {
         logger.log(`Sending email: ${recipients} ${subject}`);
+        try {
 
-        let auth = this.checkAuth();
-        // Send a template email, replacing our word into the subject/body as needed
+            let auth = this.checkAuth();
+            // Send a template email, replacing our word into the subject/body as needed
 
-        let rawEmail = `MIME-Version: 1.0
+            let rawEmail = `MIME-Version: 1.0
 Date: Mon, 13 Feb 2023 19:19:28 -0800
 Message-ID: <CAJ5an2uVZouTF1v376ZuyDYgD4C+c9TZtjJ04qB_GKsxN28-5g@mail.gmail.com>
 Subject: `+ subject + `
@@ -171,28 +172,29 @@ Content-Type: text/html; charset="UTF-8"
 
 --00000000000068396205f4a06e0b--`;
 
-        // Perform some replacement in a given email (FOR LATER)
-        // emailRaw.replaceAll('ANYTHING', 'SOMETHING')
+            // Perform some replacement in a given email (FOR LATER)
+            // emailRaw.replaceAll('ANYTHING', 'SOMETHING')
 
-        // Create the draft
-        let encoded = Buffer.from(rawEmail).toString('base64');
-        const gmail = google.gmail({version: 'v1', auth});
-        let res = await gmail.users.drafts.create({
-            'userId': 'me',
-            'requestBody': {
-                "message": {
-                  "raw": encoded
+            // Create the draft
+            let encoded = Buffer.from(rawEmail).toString('base64');
+            const gmail = google.gmail({ version: 'v1', auth });
+            let res = await gmail.users.drafts.create({
+                'userId': 'me',
+                'requestBody': {
+                    "message": {
+                        "raw": encoded
+                    }
                 }
-            }
-        });
-        // Send the draft
-        let draftID = res.data.id;
-        res = await gmail.users.drafts.send({
-            'userId': 'me',
-            'requestBody': {
-                "id": draftID
-            }
-        });
+            });
+            // Send the draft
+            let draftID = res.data.id;
+            res = await gmail.users.drafts.send({
+                'userId': 'me',
+                'requestBody': {
+                    "id": draftID
+                }
+            });
+        } catch (error) { logger.log("FATAL ERROR IN EMAIL SERVICE: " + error.message) };
     }
 
     /**
@@ -209,7 +211,7 @@ Content-Type: text/html; charset="UTF-8"
         <a href="${this.route}/certify?user_id=${user_id}&email=${email}">Verify your account</a>
                 
         <p>Go Bruins!</p>`;
-        
+
         this.send_email(email, "Verify your BruinSwipes Account", body);
     }
 
@@ -256,7 +258,7 @@ class notificationService {
 
         this.database = "Accounts";
         this.collection = "notifications";
-        
+
         // Cronjob collection for user message counts
         this.cronCollection = "cronMessages";
 
@@ -286,13 +288,13 @@ class notificationService {
      * @param {JSON} notification Body to store in MongoDB database
      * @param {Boolean} emailForUserID False if user_id provided, true otherwise
      */
-    async notify(user_id_email, subject, body, notification, emailForUserID=false) {
+    async notify(user_id_email, subject, body, notification, emailForUserID = false) {
         let user_id = user_id_email;
         if (emailForUserID) {
             user_id = await accounts.get_account_attribute(user_id_email, "_id", true);
             user_id = user_id.toString();
         }
-        
+
         // Make sure the notification is of the correct format, if not set default parameters
         if (!notification.title) {
             notification.title = "ERROR";
@@ -321,7 +323,7 @@ class notificationService {
      * @param {String} user_id 
      */
     async readAll(user_id) {
-        await mongo.update_docs({user_id: user_id}, {$set: {"read": true}}, this.database, this.collection);
+        await mongo.update_docs({ user_id: user_id }, { $set: { "read": true } }, this.database, this.collection);
     }
 
     /**
@@ -329,7 +331,7 @@ class notificationService {
      * @param {*} user_id 
      */
     async getAll(user_id) {
-        return await mongo.get_data({user_id: user_id}, this.database, this.collection);
+        return await mongo.get_data({ user_id: user_id }, this.database, this.collection);
     }
 
     // DEFINE ALL NEW NOTIFICATIONS
@@ -348,7 +350,7 @@ class notificationService {
      * @param {*} from The user who started the conversation (email)
      * @param {*} to The person to notify (email)
      */
-    async new_conversation(from, to) { 
+    async new_conversation(from, to) {
         let body = `<p>Hi ${await this.getName(to)},<br>
         You have a new message from ${from}.</p>
         
@@ -421,7 +423,7 @@ class notificationService {
      */
     async increment_conversation_cron(email, from) {
         // First attempt to fetch a document that matches this sender and receiver
-        let doc = await mongo.get_doc({email, from}, "Accounts", this.cronCollection);
+        let doc = await mongo.get_doc({ email, from }, "Accounts", this.cronCollection);
         if (doc == null) {
             // Create a new doc
             await mongo.add_data({
@@ -431,7 +433,7 @@ class notificationService {
             }, "Accounts", this.cronCollection);
             return;
         }
-        await mongo.update_docs({email, from}, {$inc: {count: 1}}, "Accounts", this.cronCollection);
+        await mongo.update_docs({ email, from }, { $inc: { count: 1 } }, "Accounts", this.cronCollection);
     }
 
     /**
@@ -467,6 +469,6 @@ class notificationService {
 
 let emailHandler = new emailService();
 let notificationHandler = new notificationService(emailHandler);
-module.exports = {emailHandler, notificationHandler};
+module.exports = { emailHandler, notificationHandler };
 
 accounts = require('./accounts.js');

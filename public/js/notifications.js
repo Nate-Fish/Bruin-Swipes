@@ -32,7 +32,7 @@ function readyButtons() {
 
 function genNotification(values) {
     let {time, title, desc} = values;
-    let q = (text) => quickCreate("p", null, text);
+    let q = (text) => quickCreate("p", {"style": "width: 200px"}, text);
     let elems = [q(time), q(title), q(desc)];
 
     let notification = quickCreate("div", {"class": ["notification"]});

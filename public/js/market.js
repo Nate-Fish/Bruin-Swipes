@@ -220,7 +220,7 @@ function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice, 
         <thead>
             <tr>
                 <th>
-                    Price {upperPrice + ' ' + lowerPrice}
+                    Price
                 </th>
             </tr>
         </thead>
@@ -605,7 +605,7 @@ function ListingLocationComponent({ locationListed, setLocationListed, locationE
     return <table className="location-class">
         <thead>
             <tr>
-                <th>Choose where you're selling the swipe:</th>
+                <th>Choose Location:</th>
             </tr>
         </thead>
         <tbody>

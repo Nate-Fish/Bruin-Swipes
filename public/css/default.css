@@ -32,6 +32,9 @@ body {
   color: #2774AE;
   display: block;
   transition: 0.3s;
+
+  font-family: "Helvetica", "Arial", sans-serif;
+  font-weight: bold;
 }
 
 /* When you mouse over the navigation links, change their color */

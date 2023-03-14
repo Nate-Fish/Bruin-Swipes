@@ -1,12 +1,12 @@
 /* Market stuff */
 /* SinglePriceComponent */
-.not-selected-buy {
+.selected-buy {
     box-shadow: 5px 5px 10px 1px rgba(0, 0, 0, .8);
     background-color: #fcfcfc;
     font-size: 13pt;
 }
 
-.selected-buy {
+.not-selected-buy {
     background-color: #797979;
     font-size: 13pt;
 }
@@ -366,7 +366,7 @@
 /* Background color for page */
 .background_color{
   background-color: #DBEDFB;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Helvetica", "Arial", sans-serif;
 }
 
 .wrapper{

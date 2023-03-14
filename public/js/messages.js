@@ -75,6 +75,9 @@ function ConversationList(props) {
     return date.toLocaleString('en-US', { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', hour12: true });
   }
   const handleClick = (index) => {
+    if (index != globalConversationIndex) {
+      difference = true;
+    }
     setCurConversationIndex(index);
   }
   return (
@@ -114,6 +117,13 @@ let render;
 let globalConversationIndex = null;
 let oldGlobalConversationIndex = 0;
 let amountRenders = 0; 
+let difference = false;
+
+function firstRender() {
+  if (difference) {
+    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(999999,999999), 200); 
+  }
+}
 
 function App() {
   const [conversations, setConversations] = React.useState(globalConversations);
@@ -132,7 +142,7 @@ function App() {
       globalConversationIndex = 0;
     }
   }
-  return (
+  const renderedApp = (
       <div className="App">
       <div className="messages-sidebar">
       <h1 className = "messages-title">Chats</h1>
@@ -151,6 +161,8 @@ function App() {
       </div>
     </div>
   );
+  firstRender();
+  return renderedApp;
 }
 const rootNode = document.getElementById('messages-root');
 const root = ReactDOM.createRoot(rootNode);
@@ -189,35 +201,32 @@ function formatConversations (conversations) {
   formattedConversations.sort((a, b) => b.messages[b.messages.length - 1].time - a.messages[a.messages.length - 1].time);
   let oldLength = formattedConversations[globalConversationIndex].messages.length;
   let newLength = globalConversations[globalConversationIndex].messages.length;
+  difference = oldLength != newLength;
   globalConversations = formattedConversations;
-  if (globalConversationIndex !== null && newLength !== oldLength && globalConversationIndex) {
-    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200);
-  }
-  if (oldGlobalConversationIndex != globalConversationIndex) {
-    oldGlobalConversationIndex = globalConversationIndex;
-    setTimeout(() => document.getElementsByClassName("chat")[0].scrollTo(99999,99999), 200); 
-  }
+
 }
 
 async function fetchLoop() {
     formatConversations(await getConversations(signed));
     render(globalConversations);
-    setTimeout(fetchLoop, 200);
+    setTimeout(fetchLoop, 100);
 }
 async function main(signedIn) {
   signed = signedIn;
-
+  
   if (!signedIn.isSignedIn) {
-    return;
+    getElem("not_signed_in").style.display = "block";
   }
+  getElem("loading").style.display = "block";
 
   let conversations = await getConversations(signed);
-
+  getElem("loading").style.display = "none";
   if (conversations.length > 0) {
     formatConversations(conversations);
     root.render(React.createElement(App));
     fetchLoop();
   } else {
+    
     getElem("noConversations").style.display = "block";
   }
 }

@@ -46,8 +46,11 @@ async function view(email, myemail) {
     // Display bio, name, email
     let bio = getElem("bio");
     bio.textContent = response.bio;
+    
 
-    getElem("name_span").textContent = response.name;
+    for (let elem of document.getElementsByClassName("name_span")) {
+        elem.textContent = response.name;
+    }
     getElem("email_span").textContent = response.email;
 
     // Hide all elements that are under the signed attribute

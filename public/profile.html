@@ -18,7 +18,7 @@
                 <div id="detailsArea" class="public-profile">
                     <div class="align">
                         <img id="profileImg" class = "img_style">
-                        <h1 style="margin: 2px;"><span class="username"></span></h1>
+                        <h1 style="margin: 2px;"><span class="name_span"></span></h1>
                     </div>
                     <h3 style="margin: 5px auto 5px auto">Bio Area</h3>
                     <textarea placeholder="Input Bio Here!" id="bio"></textarea>
@@ -26,12 +26,12 @@
                 </div>
                 <div id="infoArea" class="private-profile">
                     <div class="info">Information</div>
-                    <h3>Name: <span id="name_span"></span></h3>
+                    <h3>Name: <span class="name_span"></span></h3>
                     <h3 class="signed">Set Profile: <input type="file" id="profile-photo" accept="image/*"/></h3>
                     <h3>Email: <span id="email_span"></span></h3>
                     <div class="signed" id="listingsArea">
                         <h3 style="text-decoration: underline">Active Listings</h3>
-                        <div id="listingsTable" style="display: grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; align-items:center">
+                        <div id="listingsTable" style="display: grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; align-items:center; max-height: 300px; overflow-y: auto">
                             <h3>Location</h3>
                             <h3>Time</h3>
                             <h3>Price</h3>

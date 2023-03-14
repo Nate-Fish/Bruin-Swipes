@@ -15,15 +15,18 @@
     <link rel="stylesheet" href="css/messages.css" />
   </head>
   <body>
-    <div id="messages-root"></div>
+    <div id="messages-root">
+      <h1 id="loading" style="display:none">Loading your messages...</h1>
+    </div>
     <script src="js/messages.js" type="text/babel"></script>
-    <div class="sign" style="display:none">
+    <div id="not_signed_in" style="display:none">
       <h1 style="color:black">You are not signed in. Please sign in to view your messages.</h1>
       <h1><a href="index.html">Go Back Home</a></h1>
     </div>
 
     <div id="noConversations" style="display: none">
-      <h1 style="color:black">You have no people to message :(. Conversations are initiated when you click the "Interested" button on a listing or when someone else clicks the "Interested" button on a listing that you own.</h1>
+      <h1 style="color:black">You have no people to message :( Go to the <a href="market.html">Market</a> page to initiate a conversation.
+      </h1>
     </div>
     <!-- <div id="profile" style="display: none">
       <h1 style="color: black">You're signed in.</h1>
