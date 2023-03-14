@@ -16,6 +16,8 @@
  * 6. save-bio
  * 7. name_span
  * 8. email_span
+ * 9. listingsArea
+ * 10. listingsTable
  * 
  * 
  * Elements defined with the signed class will be hidden if the user
@@ -53,12 +55,17 @@ async function view(email, myemail) {
         // The user is signed in and viewing their own account.
         // Configure for the personal view
 
+        // Active Listings display
+        let listings = await makeRequest("/get-listings", {get_self: true});
+        listings.forEach(createListing);
+
     } else {
         // The user is viewing someone else's profile
         // Configure for public view
 
         // Make the bio read only
         bio.readOnly = true;
+        bio.placeholder = "";
 
         // Hide all signed class elements
         for (let elem of document.getElementsByClassName("signed")) {
@@ -71,6 +78,35 @@ async function view(email, myemail) {
     }
 }
 
+/**
+ * Create a HTMLelement that represents a listing and append
+ * it to the listingsTable on the page.
+ * @param {*} listing 
+ * @returns 
+ */
+function createListing(listing) {
+    console.log(listing);
+    if (listing.resolved) {
+        return;
+    }
+
+    let listingTable = getElem("listingsTable");
+
+    let resolveButton = quickCreate("button", {"class": ["bruin-button"]}, "Resolve");
+
+    resolveButton.addEventListener("click", async (evt) => {
+        let response = await makeRequest(`/resolve-listing?id=${listing._id}`);
+        window.location.reload();
+    });
+
+    listingTable.append(
+        quickCreate("p", null, listing.location),
+        quickCreate("p", null, listing.time),
+        quickCreate("p", null, "$" + listing.price),
+        quickCreate("p", null, listing.selling ? "Selling" : "Buying"),
+        resolveButton
+    );
+}
 
 // For now, just provide a hello message is someone wants to view their own profile
 function main(signedIn) {
@@ -95,9 +131,42 @@ function main(signedIn) {
  */
 function sendImage(file) {
     var reader = new FileReader();
+
+    /**
+     * Convert an image to a specific resolution for the result
+     * 
+     * From: https://stackoverflow.com/questions/934012/get-image-data-url-in-javascript
+     * @param {*} url 
+     * @param {*} callback
+     * @returns 
+     */
+    function imageToDataUri(url, callback) {
+        let img = quickCreate("img", {"src": url});
+        img.width = 100;
+        img.height = 100;
+
+        img.setAttribute('crossOrigin', 'anonymous');
+
+        img.onload = function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+    
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(this, 0, 0, 100, 100);
+
+            var dataURL = canvas.toDataURL("image/png");
+    
+            callback(dataURL);
+        };
+    }
+
     reader.onloadend = async function () {
-        let response = await (makeRequest('/post-profile', { img: reader.result }));
-        window.location.reload();
+        console.log(reader.result);
+        imageToDataUri(reader.result, async (result) => {
+            let response = await (makeRequest('/post-profile', { img: result }));
+            window.location.reload();
+        });
     }
     reader.readAsDataURL(file);
 }
@@ -114,7 +183,7 @@ async function sendBio() {
     }
     let response = await (makeRequest('/post-profile', { bio: bioInput }));
     console.log(response);
-    // window.location.reload();
+    window.location.reload();
 }
 
 signInQueue.push(main);

@@ -40,13 +40,14 @@ function drawNav() {
         <a href="profile.html">Profile</a>
         <a href="market.html">Market</a>
         <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
         </div>` +
         document.body.innerHTML;
 
     // signArea below is attached to the script in initAccountListeners
     document.body.innerHTML = `<div id="topMenu">
         <button class="openbtn" onclick="openNav()">&#9776;</button>
-        <h2>BruinSwipes</h2>
+        <img src="images/logo_nobg.png" style="height: 50px; width: 220px; background-color: white; margin:auto; "></img>
         <div style="margin: auto 0 auto 0;" id="signArea"></div>
         </div>` +
         document.body.innerHTML;

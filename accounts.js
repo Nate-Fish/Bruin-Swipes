@@ -15,6 +15,13 @@ const { notificationHandler } = require('./email-service.js');
 const Logger = require('./logging.js');
 let logger = new Logger("logs/accounts");
 
+// Import the default image
+const fs = require('fs');
+let default_image = null;
+try {
+    default_image = fs.readFileSync('public/images/default_profile.txt', 'utf8');
+} catch (error) {logger.log("Could not access default image");}
+
 /**
  * Decrypt the hash/salt using a password and return true if the password is correct.
  * 
@@ -50,7 +57,8 @@ function genPassword(password) {
  * @returns True if valid, false otherwise
  */
 function validateEmail(email) {
-    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email);
+    return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email) && 
+    email.substring(email.length - 8, email.length) == "ucla.edu";
 }
 
 /**
@@ -64,7 +72,7 @@ function validateEmail(email) {
  */
 function validatePassword(password) {
     // DISABLED FOR NOW
-    return true;
+    return password.length > 6;
 
     // return /(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%&*()]).{8,}/.test(password);
 }
@@ -117,7 +125,7 @@ async function sign_up(first, last, password, email) {
     } else if (!validatePassword(password)) {
         message = "PASSWORD DOES NOT MEET SECURITY STANDARDS";
     } else if (!validateEmail(email)) {
-        message = "EMAIL IS OF INVALID FORM";
+        message = "EMAIL IS OF INVALID FORM. YOU MUST SIGN UP WITH A UCLA EMAIL";
     } else if (!validateName(first, last)) {
         message = "NAME IS OF INVALID FORM. (No Spaces and greater than 3 characters)";
     } else {
@@ -148,7 +156,7 @@ async function sign_up(first, last, password, email) {
             "name": first + ' ' + last,
             "email": email,
             "description": "Description not yet set.",
-            "img": null,
+            "img": default_image,
             "user_id": user_id
         };
         await mongo.add_data(saveMe, "Accounts", "profiles");
@@ -354,7 +362,7 @@ async function certify(user_id, email) {
 
 // write function to send messages
 async function send_messages(sender, recipient, contents) {
-    let response = ({ "status": "fail" })
+    let response = ({ "status": "fail" });
     try {
         // Two Cases (Below, do this in accounts.js)
         // Case 1: New Conversation, use mongo.add_data to add the new document for the conversation, fill in the message
@@ -418,7 +426,7 @@ async function get_messages(sender) {
 
 /**
  * Unpack req and use its defined values to query the Listings database and return the matches
- * @param {JSON} req - We expect the query to contain URL parameters such that req = 
+ * @param {JSON} req - We expect the query to contain URL parameters such that req.body = 
  * {
  *      locations: [Array, of, locations],
  *      price_range: {
@@ -434,6 +442,7 @@ async function get_messages(sender) {
  *          order_by: {String},
  *          asc: {Boolean} //ascending is assumed unless otherwise specified
  *      }
+ *      get_self: Boolean If true, return all queries for this user
  * }
  *   
  *   Returns response, which has the form =
@@ -446,6 +455,11 @@ async function get_messages(sender) {
  */
 listing_logger = new Logger("logs/listings");
 async function query_listings(user_id, req) {
+    if (req.body.get_self) {
+        let email = await get_account_attribute(user_id, "email");
+        return await mongo.get_data({"user.email": email}, "Listings", "listings");
+    }
+    
     //unpack req into query elements
     let locations = req.body.locations;
     let price_min = req.body.price_range.price_min;
@@ -564,12 +578,7 @@ async function query_listings(user_id, req) {
  */
 async function insert_listing(user_id, req) {
     //grab the user_id, first, and last names from the user_id given and store it in user JSON
-    let user_data = await mongo.get_doc({"_id": new ObjectId(user_id)}, "Accounts", "accounts");
-    let user = {
-        user_id: user_data._id,
-        firstname: user_data.first,
-        lastname: user_data.last
-    };
+    let user = await get_account_attribute(user_id, ["email", "first", "last"]);
     listing_logger.log(`Create new listing: ${JSON.stringify(user)}`);
     let listing = req.body;
     listing["user"] = user;
@@ -621,15 +630,40 @@ async function post_profile(user_id, params) {
         if (update == {}) {
             break breakMe;
         }
-        logger.log(`Updating profile: ${user_id} ${JSON.stringify(update)}`);
+        let update_copy = {img: update.img != undefined, bio: update.bio};
+        logger.log(`Updating profile: ${user_id} ${JSON.stringify(update_copy)}`);
         update = { $set: update };
         let result = await mongo.update_docs(filter, update, "Accounts", "profiles");
         result.modifiedCount == 1 && (response.status = "success");
-    } catch (error) { console.error(error) }
+    } catch (error) { logger.log(`Error in POST PROFILE: ${error.message}`); }
     return response;
 }
 
+/**
+ * Resolve th listing with the matching user id and Object ID for that
+ * listing.
+ * @param {*} user_id 
+ * @param {*} id 
+ */
+async function resolve_listing(user_id, id) {
+    let email = await get_account_attribute(user_id, "email");
+    try {
+        let response = await mongo.update_docs({"_id": new ObjectId(id), "user.email": email}, 
+        {$set: {"resolved": true}}, "Listings", "listings");
+        
+        if (response.modifiedCount == 1) {
+            listing_logger.log(`Resolved Listing: ${user_id} ${id}`);
+            notificationHandler.resolve_listing(
+                await mongo.get_doc({"_id": new ObjectId(id), "user.email": email}, "Listings", "listings"),
+                email
+            );
+            return {"status": "success"};
+        }
+    } catch (err) {listing_logger.log(`ERROR IN RESOLVE: ${err.message}`); return {"status": "fail"}};
+    return {"status": "fail"};
+}
 
 module.exports = {
-    sign_up, login, get_account_attribute, issue_session, verify_session, certify, query_listings, insert_listing, fetch_profile, post_profile, send_messages, get_messages
+    sign_up, login, get_account_attribute, issue_session, verify_session, certify, query_listings, insert_listing, fetch_profile, post_profile, send_messages, get_messages,
+    resolve_listing
 }

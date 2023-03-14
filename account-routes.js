@@ -295,7 +295,7 @@ async function get_messages(req, res) {
 /**
  * A function meant to handle queries for the Listings Database from the MongoDB
  * 
- * @param {JSON} req - We expect the query to contain URL parameters such that req = 
+ * @param {JSON} req - We expect the query to contain URL parameters such that req.body = 
  * {
  *      locations: [Array, of, locations],
  *      price_range: {
@@ -369,6 +369,23 @@ async function post_listing(req, res) {
     res.send({ "status": "success" });
 }
 
+/**
+ * Resolve a given user listing if the user is logged in and owns that
+ * listing.
+ * 
+ * @param {*} req Assume that req.query includes a id attribute pointing
+ * to the MongoDB _id document of the listing that needs to be resolved
+ * @param {*} res 
+ */
+async function resolve_listing(req, res) {
+    let verify_response = await test_signed(req, res);
+    if (!verify_response) {
+        return;
+    }
+
+    res.send(await accounts.resolve_listing(verify_response["user_id"], req.query.id));
+}
+
 module.exports = {
-    sign_up, login, logout, verify_session, certify, get_listings, post_listing, get_notifications, read_notifications, fetch_profile, post_profile, send_messages, get_messages
+    sign_up, login, logout, verify_session, certify, get_listings, post_listing, get_notifications, read_notifications, fetch_profile, post_profile, send_messages, get_messages, resolve_listing
 }

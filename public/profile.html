@@ -29,7 +29,16 @@
                     <h3>Name: <span id="name_span"></span></h3>
                     <h3 class="signed">Set Profile: <input type="file" id="profile-photo" accept="image/*"/></h3>
                     <h3>Email: <span id="email_span"></span></h3>
-                    <h3 style="text-decoration: underline">Active Listings</h3>
+                    <div class="signed" id="listingsArea">
+                        <h3 style="text-decoration: underline">Active Listings</h3>
+                        <div id="listingsTable" style="display: grid; grid-template-columns:1fr 1fr 1fr 1fr 1fr; align-items:center">
+                            <h3>Location</h3>
+                            <h3>Time</h3>
+                            <h3>Price</h3>
+                            <h3>Buy/Sell</h3>
+                            <h3>Resolve</h3>
+                        </div>
+                    </div>
                     <!-- TODO: <div class="pw-button">Change Password</div> -->
                 </div>
             </div>
