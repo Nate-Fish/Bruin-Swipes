@@ -925,7 +925,7 @@ function main(){
     }
 
     async function make_listing(){
-        let date = curr_date();
+        let date = (new Date()).getTime();
         let body = {
             location: locationListed,
             time: timeListed,

@@ -99,8 +99,6 @@ class emailService {
     async initialize() {
         await this.authorize();
         console.log("Email service initialized!");
-        
-        // this.send_email(`pirjot@g.ucla.edu`, `Hey`, `<p><b>This is BruinBot!</b></p>`);
     }
 
     /**
@@ -148,7 +146,7 @@ class emailService {
      * @param {String} body in HTML
      */
     async send_email(recipients, subject, body) {
-        logger.log(`Sending email: ${recipients.join(', ')} ${subject}`);
+        logger.log(`Sending email: ${recipients} ${subject}`);
 
         let auth = this.checkAuth();
         // Send a template email, replacing our word into the subject/body as needed
@@ -205,7 +203,6 @@ Content-Type: text/html; charset="UTF-8"
      * @param {*} user_id 
      */
     async certify_email(name, email, user_id) {
-        // TODO: Change recipients to actual email parameter above (for now, route emails to where you want)
         let body = `<p>Hi ${name},</p>
     
         <p>Welcome to BruinSwipes! After verifying your account, you can login normally from the website. Verify your account with the link below:</p>
@@ -213,7 +210,7 @@ Content-Type: text/html; charset="UTF-8"
                 
         <p>Go Bruins!</p>`;
         
-        this.send_email("bruinswipesbot@gmail.com", "Verify your BruinSwipes Account", body);
+        this.send_email(email, "Verify your BruinSwipes Account", body);
     }
 
 }
@@ -269,10 +266,13 @@ class notificationService {
 
         let rate = 1000 * 60 * 60; // 60 minutes
         setInterval(() => {
-            logger.log("Running Cronjob");
+            logger.log("Running Conversation Cronjob");
             this.conversation_cronjob();
 
         }, rate);
+
+        // Run it at the start of the server
+        this.conversation_cronjob();
     }
 
     /**
@@ -309,7 +309,7 @@ class notificationService {
         logger.log(`Sending Notification: ${user_id_email} ${subject} ${notification.title}`);
         // Send the email to the given user
         let email = emailForUserID ? user_id_email : await accounts.get_account_attribute(user_id, "email");
-        this.emailHandler.send_email("bruinswipesbot@gmail.com", subject, body);
+        this.emailHandler.send_email(email, subject, body);
 
         // Store the notification
         mongo.add_data(notification, this.database, this.collection);
@@ -335,17 +335,12 @@ class notificationService {
     // DEFINE ALL NEW NOTIFICATIONS
 
     /**
-     * TODO: Notifications for each type of user interaction:
-     * 
-     * Examples:
-     * 1. Profile Modification (Unnecessary)
-     * 2. Monthly Statistics (Unnecessary)
-     * 3. User listing for selling has new user
-     * 4. Request has been filled
-     * 5. Message sent from one user to another
+     * Helper function to retrieve name from email.
+     * @param {*} email 
      */
-
-    // TODO, change emails to usernames where needed
+    async getName(email) {
+        return await accounts.get_account_attribute(email, "first", true);
+    }
 
     /**
      * Notify a user that they have a new conversation from another
@@ -353,8 +348,8 @@ class notificationService {
      * @param {*} from The user who started the conversation (email)
      * @param {*} to The person to notify (email)
      */
-    async new_conversation(from, to) {        
-        let body = `<p>Hi ${to},<br>
+    async new_conversation(from, to) { 
+        let body = `<p>Hi ${await this.getName(to)},<br>
         You have a new message from ${from}.</p>
         
         <p>View your messages at ${emailHandler.route}/messages.html</p>`;
@@ -376,10 +371,8 @@ class notificationService {
      * @param {Number} number The TOTAL number of messages that they have received
      */
     async cronjobHelper(froms, to, number) {
-        let address = emailHandler.route + "/messages.html";
-
         // Create list of people
-        let body = `<p>Hi ${to},<br>
+        let body = `<p>Hi ${await this.getName(to)},<br>
 
         <p>You have ${number} new messages in the last hour from the following
         users: ${froms.join(", ")}.</p>
@@ -440,6 +433,36 @@ class notificationService {
         }
         await mongo.update_docs({email, from}, {$inc: {count: 1}}, "Accounts", this.cronCollection);
     }
+
+    /**
+     * Send a message to the user who just resolved their listing.
+     * @param {JSON} listing The listing body
+     * @param {String} to Person that is resolving the listing
+     */
+    async resolve_listing(listing, to) {
+        let body = `<p>Hi ${await this.getName(to)},<br>
+        Your listing for ${listing.time} was just resolved.</p>
+        
+        <h3>Listing Information</h3>
+        <p><b>Time Posted: </b>${listing.time}</p>
+        <p><b>Location: </b>${listing.location}</p>
+        <p><b>Price: </b>${listing.price}</p>
+        <p>You were <b>${listing.selling ? "selling" : "buying"}</b> this swipe.</p>
+        
+        <p>Please keep track of anyone that you were
+        contacting about this listing on the messages
+        page and exchange contact info if needed
+        at ${emailHandler.route}/messages.html</p>
+
+        <p> If you have any difficulty contacting your seller/buyer, feel free to contact us at pirjot@ucla.edu.</p>`;
+
+        let notification = {
+            "title": "Listing Resolved",
+            "desc": `You just resolved your listing that was posted at ${listing.time}.`
+        }
+
+        this.notify(to, "Listing Resolved", body, notification, true);
+    }
 }
 
 let emailHandler = new emailService();
@@ -447,6 +470,3 @@ let notificationHandler = new notificationService(emailHandler);
 module.exports = {emailHandler, notificationHandler};
 
 accounts = require('./accounts.js');
-
-// Email Handler also adds notificationHandler to module.exports
-// module.exports.notificationHandler = new notificationService(module.exports.emailHandler);

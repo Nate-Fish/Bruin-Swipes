@@ -11,7 +11,11 @@ function routeHandler (app) { // Default export (bottom of file)
     app.use((req, res, next) => {
         // Avoid routes that are called too often
         if (!(req.originalUrl == "/get-messages" || req.originalUrl == "/query-listings")) {
-            logger.log(`Route Called: ${req.originalUrl}, Body: ` + JSON.stringify(req.body));
+            if (req.originalUrl == "/post-profile") {
+                logger.log(`Route Called: ${req.originalUrl}, Body: ` + JSON.stringify({img: req.body.img != undefined, bio: req.body.bio}));
+            } else {
+                logger.log(`Route Called: ${req.originalUrl}, Body: ` + JSON.stringify(req.body));
+            }
         }
 
         next();
@@ -49,10 +53,13 @@ function setup_get_routes (app) {
     // START MISC GET ROUTES
 
     // Fetch a profile
-    app.get('/fetch-profile', (req, res) => account_routes.fetch_profile(req,res));
+    app.get('/fetch-profile', (req, res) => account_routes.fetch_profile(req, res));
 
     // Get Messages
     app.get('/get-messages', (req, res) => account_routes.get_messages(req, res));
+
+    // Resolve a listing
+    app.get('/resolve-listing', (req, res) => account_routes.resolve_listing(req, res));
 
     // END MISC GET ROUTES
 

@@ -206,8 +206,19 @@ async function fetchLoop() {
 }
 async function main(signedIn) {
   signed = signedIn;
-  formatConversations(await getConversations(signed));
-  root.render(React.createElement(App));
-  fetchLoop();
+
+  if (!signedIn.isSignedIn) {
+    return;
+  }
+
+  let conversations = await getConversations(signed);
+
+  if (conversations.length > 0) {
+    formatConversations(conversations);
+    root.render(React.createElement(App));
+    fetchLoop();
+  } else {
+    getElem("noConversations").style.display = "block";
+  }
 }
 signInQueue.push(main);
