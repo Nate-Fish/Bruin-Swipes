@@ -118,6 +118,13 @@ let amountRenders = 0;
 function App() {
   const [conversations, setConversations] = React.useState(globalConversations);
   const [curConversationIndex, setCurConversationIndex] = React.useState(0);
+  if(conversations.length == 0) {
+    return (
+      <div>
+        <h3>No conversations yet! Visit the page <a href="/market.html">market</a> to reach out to people.</h3>
+      </div>
+    )
+  }
   globalConversationIndex = curConversationIndex;
   render = setConversations;
   const handleSend = async (message) => {
