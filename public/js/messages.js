@@ -216,6 +216,7 @@ async function main(signedIn) {
   
   if (!signedIn.isSignedIn) {
     getElem("not_signed_in").style.display = "block";
+    return
   }
   getElem("loading").style.display = "block";
 

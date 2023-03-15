@@ -23,7 +23,6 @@ body {
   height: 5vh;
   font-size: 16px;
   padding: 10px;
-  /* border-radius: 20px 0 0 20px; */
   border: none;
   outline: none;
   position: relative;
@@ -47,7 +46,6 @@ body {
   font-size: 16px;
   color: #fff;
   background-color: #2774AE;
-  /* border-radius: 20px 20px 20px 20px; */
   border: none;
   outline: none;
   cursor: pointer;
@@ -65,9 +63,6 @@ body {
   top: 0;
   left: 0;
   overflow-y: scroll;
-  /* border: solid 3px;  */
-  /* border-image: linear-gradient(to bottom, #FFD100, #fff) 1; */
-  /* border: solid 3px #FFD100; */
 }
 
 .conversation-details {

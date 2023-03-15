@@ -9,7 +9,6 @@ h1 {
 
 .logo-background {
   text-align: center;
-  background-color: #DBEDFB;
   border-top: 1px solid #17244c;
   padding: 0px 0px 6px;
 }
@@ -23,10 +22,8 @@ h1 {
 }
 
 body {
-  font-family: "Helvetica", "Arial", sans-serif;
   font-weight: bold;
   color: #FFFFFF;
-  background-color: #DBEDFB;
 }
 
 .main {

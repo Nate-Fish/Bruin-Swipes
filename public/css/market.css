@@ -37,29 +37,8 @@
     margin-bottom: 10px;
     padding: 0; 
     align-items: center;
-    /* background-color:#60aae6; */
     border-radius: 15px;
-    /* margin-left:auto; 
-    margin-right:auto; */
 }
-
-/* .listing-time {
-  padding-top: 15px;
-}
-.listing-time td {
-  font-size: 20px;
-  display: flex;
-  margin-left: auto;
-  margin-right: auto;
-  justify-content: center;
-}
-.listing-time th {
-  padding-bottom: 10px;
-  font-size: 20px;
-}
-.listing-time label input {
-  font-size: 15px;
-} */
 
 .listing-price {
   padding-top: 15px;
@@ -145,7 +124,6 @@
 
 .loc-search-item {
     display: flex;
-    /* justify-content: space-between; */
     max-width: 200px;
     margin: 0 auto;
     padding: 5px 0;
@@ -161,40 +139,19 @@
   padding-right: 10px;
 }
 
-
-
-/* .location-class tr {
-  margin-right: auto;
-  margin-left: auto;
-} */
-
 .margin {
     padding: 30px;
 }
 
 .grid_class {
-    /* display: flex;
-    justify-content: space-between;
-    max-width: fit-content;
-    margin: 0 auto;
-    padding: 10px 0; */
     margin-left:auto; 
     margin-right:auto;
-    /* margin: 0 auto; */
-    /* margin-right: 0;
-    margin-left: 0; */
     border-collapse: collapse;
     max-width: fit-content;
     padding-left: 10px;
     padding-right: 10px;
   }
 
-
-
-/* Something to think about in the future */
-/* tbody td{
-  padding: 5px;
-} */
 
 .grid-background {
   background-color: #60aae6;
@@ -204,7 +161,6 @@
   border-radius: 8px;
   border-color:#000000;
   border-width: 10px;
-  /* justify-content: start; */
 }
 
 .grid-background-left-th {
@@ -230,20 +186,10 @@
 
 .alternated-row {
   background-color: #aecde6;
-  /* column-fill: auto; */
-  /* border-radius: 3px;  */
-  /* border: 15px solid black; */
 }
 
 .alternated-row td {
   padding: 15px 10px;
-}
-
-.other-row {
-  background-color: #DBEDFB;
-  /* column-fill: auto; */
-  /* border-radius: 3px; */
-  /* border: 1px solid black; */
 }
 
 .other-row td {
@@ -348,7 +294,6 @@
 .sm-bruin-button {
   border: 2px solid white;
   background-color: gold;
-  /* color: white; */
   border-radius: 15px;
   padding: 0.3rem 0.8rem;
   transition: background-color 0.25s;
@@ -361,12 +306,6 @@
 .sm-bruin-button:hover {
   background-color: white;
   color: gold;
-}
-
-/* Background color for page */
-.background_color{
-  background-color: #DBEDFB;
-  font-family: "Helvetica", "Arial", sans-serif;
 }
 
 .wrapper{
