@@ -1,36 +1,11 @@
 import React, { useState } from 'react';
 
-// function OpenChat() {
-//   return (
-//     <div className="d-flex flex-column flex-grow-1">
-//       <div className="overflow-auto flex-grow-1">
-
-//       </div>
-//     </div>
-//   )
-// }
-// function ChatWindow(messages) {
-//   // for (i in messages) {
-
-//   // }
-// }
-// function addMessage({recipient, text, sender, time, listingID}) {
-
-// }
-// function sendMessage({recipient, text}) {
-//   addMessage({recipientID, text, id, time, listingID})
-// }
 function TextBox() {
   const [code, setCode] = useState('');
-  // const { sendMessage } = useChat()
 
   const handleKeyDown = (event) => {
     if (event.key === 'Enter' && code !== '') {
-      // Send the code to the database
       console.log(code);
-      // Send message
-      // sendMessage();
-      // Clear the textbox
       setCode('');
     }
   }
@@ -42,10 +17,6 @@ function TextBox() {
       // sendMessage();
       setCode("");
       document.getElementById("textbox").focus();
-      // FIX THIS
-      // const inputField = document.getElementById("inputField");
-      // inputField.focus();
-      // inputField.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" }));
     }
   };
 
