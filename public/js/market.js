@@ -10,7 +10,7 @@ function SellButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickBuy} className="bruin-button">View Sell Listings</button>
+    return <button onClick={handleClickBuy} className={buy === undefined || ! buy ? "bruin-button" : "bruin-button-selected"}>View Sell Listings</button>
 }
 
 function BuyButton({ buy, callback, update_query }){
@@ -23,7 +23,7 @@ function BuyButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickSell} className="bruin-button">View Buy Listings</button>
+    return <button onClick={handleClickSell} className={buy === undefined || buy ? "bruin-button" : "bruin-button-selected"}>View Buy Listings</button>
 }
 
 function FilterButton({ callback }){
