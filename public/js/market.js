@@ -347,7 +347,7 @@ function map_data(all_data, index){
                     {"$" + vals["price"] + ".00"}
                 </td>
                 <td>
-                    {vals.user.firstname + " " + vals.user.lastname}
+                    {vals.user.first + " " + vals.user.last}
                 </td>
                 <td>
                     {vals["selling"] ? "Selling" : "Buying"}

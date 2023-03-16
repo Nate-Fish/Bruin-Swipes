@@ -385,7 +385,7 @@ async function send_messages(sender, recipient, contents) {
                     time: (new Date()).getTime()
                 }]
             }, "Messages", "messages");
-            logger.log(`New conversation: ${sender} ${recipients}`);
+            logger.log(`New conversation: ${sender} ${recipient}`);
 
             // Send notification to user
             notificationHandler.new_conversation(sender, recipient);

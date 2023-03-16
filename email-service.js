@@ -155,9 +155,9 @@ class emailService {
             let rawEmail = `MIME-Version: 1.0
 Date: Mon, 13 Feb 2023 19:19:28 -0800
 Message-ID: <CAJ5an2uVZouTF1v376ZuyDYgD4C+c9TZtjJ04qB_GKsxN28-5g@mail.gmail.com>
-Subject: `+ subject + `
+Subject: ${subject}
 From: Bruinswipes Bot <bruinswipesbot@gmail.com>
-To: ` + recipients + `
+To: ${recipients}
 Content-Type: multipart/alternative; boundary="00000000000068396205f4a06e0b"
 
 --00000000000068396205f4a06e0b
@@ -168,7 +168,7 @@ Body
 --00000000000068396205f4a06e0b
 Content-Type: text/html; charset="UTF-8"
 
-` + body + `
+${body}
 
 --00000000000068396205f4a06e0b--`;
 

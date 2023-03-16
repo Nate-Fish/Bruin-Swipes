@@ -47,12 +47,12 @@ function drawNav() {
     // signArea below is attached to the script in initAccountListeners
     document.body.innerHTML = `<div id="topMenu">
         <button class="openbtn" onclick="openNav()">&#9776;</button>
-        <img src="images/logo_nobg.png" style="    height: 50px;
+        <a href="index.html"><img src="images/logo_nobg.png" style="    height: 50px;
         width: 220px;
         margin: auto;
         background-color: rgba(255,255,255,1);
         border-radius: 10%;
-        border: 2px solid gold;"></img>
+        border: 2px solid gold;"></img></a>
         <div style="margin: auto 0 auto 0;" id="signArea"></div>
         </div>` +
         document.body.innerHTML;
