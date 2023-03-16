@@ -92,24 +92,6 @@
   border-radius: 15px;
 }
 
-.loc-bruin-button {
-  border: 2px solid white;
-  background-color: #6cb5ec;
-  color: white;
-  border-radius: 15px;
-  padding: 0.3rem 0.8rem;
-  transition: background-color 0.25s;
-  outline: none;
-  cursor: pointer;
-  text-decoration: none;
-  font-size: 13px;
-}
-
-.loc-bruin-button:hover {
-  background-color: white;
-  color: #6cb5ec;
-}
-
 .loc-list-items {
   column-count: 3;
 }
@@ -256,6 +238,19 @@
 }
 
 .bruin-button:hover {
+  background-color: white;
+  color: #2774AE;
+}
+
+.bruin-button-selected {
+  border: 2px solid white;
+  border-radius: 15px;
+  padding: 0.3rem 0.8rem;
+  transition: background-color 0.25s;
+  outline: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 18px;
   background-color: white;
   color: #2774AE;
 }
