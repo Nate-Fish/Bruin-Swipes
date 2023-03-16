@@ -1,40 +1,6 @@
 'use strict';
 
-// import { useState } from React;
-// import button from "material-ui";
-// import Button from '@material-ui/core/Button';
-
-// const button = window["MaterialUI"]
-
-
-let locs = ['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman'];
-let times = ['2023-02-22T12:12', '2023-02-03T12:12', '2023-02-07T12:15', '2023-03-02T12:15', '2023-04-30T12:15'];
-let prices = [1, 2, 3, 4, 5];
-let buy = [true, false];
-
-// Generate template data
-function populate_sample_data(){
-    for(let i = 0; i < locs.length; i++){
-        for(let j = 0; j < times.length; j++){
-            for(let k = 0; k < prices.length; k++){
-                for(let l = 0; l < buy.length; l++){
-                    let body = {
-                        location: locs[i],
-                        time: times[j],
-                        price: prices[k],
-                        time_posted: "2023-03-8T14:05",
-                        resolved: false,
-                        selling: buy[l]
-                    };
-                    makeRequest('/post-listing', body);
-                }
-            }
-        }
-    }
-}
-
-
-function BuyButton({ buy, callback, update_query }){
+function SellButton({ buy, callback, update_query }){
     function handleClickBuy() {
         if(buy === undefined || !buy){
             callback(true);
@@ -44,10 +10,10 @@ function BuyButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickBuy} className="bruin-button">View Buy Listings</button>
+    return <button onClick={handleClickBuy} className="bruin-button">View Sell Listings</button>
 }
 
-function SellButton({ buy, callback, update_query }){
+function BuyButton({ buy, callback, update_query }){
     function handleClickSell() {
         if(buy === undefined || buy){
             callback(false);
@@ -57,7 +23,7 @@ function SellButton({ buy, callback, update_query }){
             update_query({showBuys: "undefined"});
         }
     }
-    return <button onClick={handleClickSell} className="bruin-button">View Sell Listings</button>
+    return <button onClick={handleClickSell} className="bruin-button">View Buy Listings</button>
 }
 
 function FilterButton({ callback }){
@@ -80,7 +46,6 @@ function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLower
     return (<>
     <hr></hr>
     <div className="filter_class">
-        {/* <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/> */}
         <PriceComponent lowerPrice={lowerPrice} upperPrice={upperPrice} setLowerPrice={setLowerPrice} setUpperPrice={setUpperPrice} update_query={update_query}/>
         <FilterTimeComponent startTimeFilter={startTimeFilter} setStartTimeFilter={setStartTimeFilter} endTimeFilter={endTimeFilter} setEndTimeFilter={setEndTimeFilter} update_query={update_query}/>
     </div>
@@ -271,7 +236,10 @@ function LowerLimitBar({ callback, lowerPrice }){
     }}>
         <label>
             Lower: $
-            <input type="number" value={field} onChange={(e) => {setField(e.target.value)}}/>
+            <input type="number" value={field} onChange={(e) => {
+                setField(e.target.value)
+                callback(parseInt(e.target.value));
+                }}/>
         </label>
     </form>
     );
@@ -287,27 +255,13 @@ function UpperLimitBar({ callback, upperPrice }){
     }}>
         <label>
             Upper: $
-            <input type="number" value={field} onChange={(e) => {setField(e.target.value)}}/>
+            <input type="number" value={field} onChange={(e) => {
+                setField(e.target.value)
+                callback(parseInt(e.target.value))
+                }}/>
         </label>
     </form>
     );
-}
-
-function SearchBar({ searchCallback }){
-    const [field, setField] = React.useState("")
-
-
-    return <form onSubmit={e => {e.preventDefault();}}>
-        <label className="loc-search-bar">
-            Search:
-            <input type="text" value={field} 
-            onChange={(e) => {
-                searchCallback(e.target.value)
-                setField(e.target.value)
-                }}
-                />
-        </label>
-    </form>
 }
 
 function unpack_date(date){
@@ -364,7 +318,7 @@ async function send_message(vals){
     window.location.href = "messages.html?email=" + vals.user["email"];
 }
 
-function message_button(vals){
+function MessageButton(vals){
     if(email !== vals.user["email"]){
         return (<button className="sm-bruin-button" onClick={() => send_message(vals)}>
         Interested?
@@ -382,9 +336,7 @@ function map_data(all_data, index){
     return(
         all_data_copy.map((vals, i) => {
         return (
-        // <div className="colored">
             <tr className={i % 2 == 0 ? "alternated-row" : "other-row"}key={i}>
-            
                 <td >
                     {vals["location"]}
                 </td>
@@ -401,7 +353,7 @@ function map_data(all_data, index){
                     {vals["selling"] ? "Selling" : "Buying"}
                 </td>
                 <td>
-                    {message_button(vals)}
+                    {MessageButton(vals)}
                 </td>
             </tr>
         )
@@ -420,7 +372,6 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
         update_query();
     }
 
-    //console.log("All data: ", all_data);
     if(Array.isArray(all_data)){
     
         function handleClick(sort){
@@ -438,9 +389,9 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
 
             }
         }
-    
-        return (
-        <div className="grid-background">
+
+        return all_data.length === 0 ? <h1 className="centered">No listings to display. Log in if you haven't.</h1> 
+        : (<div className="grid-background">
             <table className="grid_class">
                 <thead>
                     <tr className="top-row">
@@ -493,14 +444,12 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
 
 // Component to get location for filter 
 function LocationComponent({ filteredLocations, setFilteredLocations, update_query, isCreate = false, error = ""}){
-    // Change default from constant value thing to db call
-    const [allLocations, setAllLocation] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
     const [locations, setLocations] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
 
     const locs = locations.map((loc, i) => {
         return (
         <div className="loc-search-item" key={i} onClick={() => updateFilteredLocations(loc)}>
-            <input checked={checkIn(loc) !== -1} type="checkbox" onChange={() => updateFilteredLocations(loc)}></input> {/* className={checkIn(loc) !== -1 ? "loc-selected" : "loc-not-selected"} */}
+            <input checked={checkIn(loc) !== -1} type="checkbox" onChange={() => updateFilteredLocations(loc)}></input> 
             <label>{loc}</label>
         </div>
         );
@@ -514,44 +463,11 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
         setFilteredLocations(copy)
         update_query({locations: copy});
     }
-    function addAll(){
-        let temp = []
-        for (let j = 0; j < locations.length; j++){
-            temp.push(locations[j])
-        }
-        setFilteredLocations(temp)
-        update_query({locations: temp});
-    }
     function checkIn(loc){
         for (let j = 0; j < filteredLocations.length; j++){
             if (filteredLocations[j] === loc) return j;
         }
         return -1;
-    }
-    function updateSearch(text){
-        // find new locations
-        let curr = []
-        let n = text.length;
-        for (let i = 0; i < allLocations.length; i++){
-            if (allLocations[i].length >= n && allLocations[i].substring(0, n).toLowerCase() === text.toLowerCase()) curr.push(allLocations[i])
-        }
-
-        // update current filtered locations
-        // probably remove but its lowkey sick af
-        let filteredCopy = filteredLocations.slice()
-        for (let i = 0; i < filteredCopy.length; i++){
-            let flag = false;
-            for (let j = 0; j < curr.length; j++){
-                if (curr[j] === filteredCopy[i]) flag = true;
-            }
-            if (!flag) {
-                filteredCopy.splice(i, 1);
-            }
-        }
-        setFilteredLocations(filteredCopy)
-        setLocations(curr)
-        update_query({locations: curr});
-        
     }
 
     return <table className="location-class">
@@ -561,24 +477,9 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
             </tr>
         </thead>
         <tbody>
-            {/* {!isCreate ? 
-            <tr>
-                <td className="loc-top-row">
-                    <button className="loc-bruin-button" onClick={addAll}>Select All</button>
-                    <button className="loc-bruin-button" onClick={() => {setFilteredLocations([]); update_query({locations: []});}}>Unselect All</button>
-                </td>
-            </tr>
-            : <></>} */}
-            {/* <tr>  className="loc-outer-search" 
-                <td>
-                    <SearchBar searchCallback={(e) => {updateSearch(e)}}/>
-                </td>
-            </tr> */}
-            <tr> {/* className="loc-outer-search" */}
+            <tr> 
                 <td className="loc-list-items">
-                    {/* <ul className="scroller"> */}
-                        {locs}
-                    {/* </ul> */}
+                    {locs}
                 </td>
             </tr>
             <tr>
@@ -589,14 +490,12 @@ function LocationComponent({ filteredLocations, setFilteredLocations, update_que
 }
 
 function ListingLocationComponent({ locationListed, setLocationListed, locationError }){
-    // Change default from constant value thing to db call
-    const [allLocations, setAllLocation] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
     const [locations, setLocations] = React.useState(['Epicuria', 'De Neve', 'Bruin Plate', 'Feast', 'Bruin Cafe', 'Rendezvous', 'The Study', 'The Drey', 'Epic at Ackerman']);
 
     const locs = locations.map((loc, i) => {
         return (
         <div className="loc-search-item" key={i} onClick={() => setLocationListed(loc)}>
-            <input checked={loc === locationListed} type="checkbox" onChange={() => setLocationListed(loc)}></input> {/* className={checkIn(loc) !== -1 ? "loc-selected" : "loc-not-selected"} */}
+            <input checked={loc === locationListed} type="checkbox" onChange={() => setLocationListed(loc)}></input>
             <label>{loc}</label>
         </div>
         );
@@ -609,16 +508,9 @@ function ListingLocationComponent({ locationListed, setLocationListed, locationE
             </tr>
         </thead>
         <tbody>
-            {/* <tr>
-                <td>
-                    <SearchBar searchCallback={(e) => {updateSearch(e)}}/>
-                </td>
-            </tr> */}
             <tr>
                 <td className="loc-list-items">
-                    {/* <ul className="scroller"> */}
-                        {locs}
-                    {/* </ul> */}
+                    {locs}
                 </td>
             </tr>
             <tr>
@@ -630,12 +522,6 @@ function ListingLocationComponent({ locationListed, setLocationListed, locationE
 
 // Component for when your making a listing and choosing the price
 function ListingPriceComponent({isBuy, setIsBuy, priceListed, setPriceListed, priceInput, setPriceInput, priceError, setPriceError}){
-
-    function flipBuy(){
-        setIsBuy(!isBuy)
-    }
-
-
     return (
         <table className="listing-price">
             <thead>
@@ -790,10 +676,10 @@ function Popup({ stage, setStage, locationListed, setLocationListed, locationErr
     }
 
     return (
-    <div className="popup-box">
-        <div className="box">
-            <span className="close-icon" onClick={handleClose}>x</span>
-            <span className="back-icon" onClick={backClicked}>{'<-'}</span>
+    <div className="create-listing-box">
+        <div className="inside-box">
+            <span className="close-button" onClick={handleClose}>x</span>
+            <span className="back-button" onClick={backClicked}>{'<-'}</span>
             {stages[stage]}
             <table>
                 <tbody>
@@ -817,7 +703,6 @@ function Popup({ stage, setStage, locationListed, setLocationListed, locationErr
 
 
 // main compoenent that holds everything
-// All filters come back here, so probably get data from db here and pass filters here as well
 function main(){
     //keep state of everything we need
 
@@ -939,7 +824,7 @@ function main(){
     
     return <>
         <div className="wrapper">
-        <div className="div_class">
+        <div className="main_button_wrapper">
                 <BuyButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
                 <SellButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
                 <FilterButton callback={() => setShowFilter(!showFilter)}/>
@@ -965,7 +850,6 @@ function main(){
         </div>
         </div>
         <div>
-            {/* {showPopup ? <Popup content="Some text" handleClose={() => setShowPopup(!showPopup)}/> : <></>} */}
             {showPopup ? <Popup stage={stage} setStage={setStage} 
             locationListed={locationListed} setLocationListed={setLocationListed}
             locationError={locationError} setLocationError={setLocationError}
