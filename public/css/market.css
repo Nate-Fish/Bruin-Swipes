@@ -1,5 +1,4 @@
 /* Market stuff */
-/* SinglePriceComponent */
 .selected-buy {
     box-shadow: 5px 5px 10px 1px rgba(0, 0, 0, .8);
     background-color: #fcfcfc;
@@ -15,13 +14,7 @@
     text-align: center;
 }
 
-.element_centered {
-    margin: auto;
-    text-align: center;
-}
-
-/* Test */
-.div_class {
+.main_button_wrapper {
     display: flex;
     justify-content: space-evenly;
     margin: 0 auto;
@@ -45,7 +38,6 @@
 }
 
 .listing-price td {
-  /* font-size: 20px; */
   display: flex;
   margin-left: auto;
   margin-right: auto;
@@ -129,20 +121,6 @@
     padding: 5px 0;
 }
 
-.loc-selected {
-  background-color: yellow;
-  padding-right: 10px;
-}
-
-.loc-not-selected {
-  background-color: #f1f1f1;
-  padding-right: 10px;
-}
-
-.margin {
-    padding: 30px;
-}
-
 .grid_class {
     margin-left:auto; 
     margin-right:auto;
@@ -199,75 +177,68 @@
 .colored {
   background-color: #84c2f5;
 }
-  
-/* LocationComponent */
 
-.scroller {
-  width: 200px;
-  height: 50px;
+  
+/* Popup style */
+.create-listing-box {
+  position: fixed;
+  background: #00000050;
+  width: 100%;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+.inside-box {
+  position: relative;
+  width: 70%;
+  margin: 0 auto;
+  height: auto;
+  max-height: 70vh;
+  margin-top: calc(100vh - 85vh - 20px);
+  background: #fff;
+  border-radius: 4px;
+  padding: 20px;
+  border: 1px solid #999;
   overflow: auto;
 }
-  
-  /* Popup style */
-  .popup-box {
-    position: fixed;
-    background: #00000050;
-    width: 100%;
-    height: 100vh;
-    top: 0;
-    left: 0;
-  }
-  
-  .box {
-    position: relative;
-    width: 70%;
-    margin: 0 auto;
-    height: auto;
-    max-height: 70vh;
-    margin-top: calc(100vh - 85vh - 20px);
-    background: #fff;
-    border-radius: 4px;
-    padding: 20px;
-    border: 1px solid #999;
-    overflow: auto;
-  }
-  
-  .box table{
-    margin-left: auto;
-    margin-right: auto;
-  }
 
-  .close-icon {
-    content: 'x';
-    cursor: pointer;
-    position: fixed;
-    right: calc(15% - 30px);
-    top: calc(100vh - 85vh - 33px);
-    background: #ededed;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    line-height: 20px;
-    text-align: center;
-    border: 1px solid #999;
-    font-size: 20px;
-  }
-  
-  .back-icon {
-    content: '<-';
-    cursor: pointer;
-    position: fixed;
-    left: calc(15% - 30px);
-    top: calc(100vh - 85vh - 33px);
-    background: #ededed;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    line-height: 20px;
-    text-align: center;
-    border: 1px solid #999;
-    font-size: 20px;
-  }
+.inside-box table{
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.close-button {
+  content: 'x';
+  cursor: pointer;
+  position: fixed;
+  right: calc(15% - 30px);
+  top: calc(100vh - 85vh - 33px);
+  background: #ededed;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  line-height: 20px;
+  text-align: center;
+  border: 1px solid #999;
+  font-size: 20px;
+}
+
+.back-button {
+  content: '<-';
+  cursor: pointer;
+  position: fixed;
+  left: calc(15% - 30px);
+  top: calc(100vh - 85vh - 33px);
+  background: #ededed;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  line-height: 20px;
+  text-align: center;
+  border: 1px solid #999;
+  font-size: 20px;
+}
 
   /* Button style taken from default.css */
   
