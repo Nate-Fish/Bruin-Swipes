@@ -3,9 +3,6 @@ node_modules
 logs
 
 # Secrets
-.env
-credentials.json
-token.json
 
 # Miscellaneous files
 .DS_Store
