@@ -6,6 +6,10 @@
 
 > *One cannot think well, love well, sleep well, if one has not dined well. -Virginia Woolf*
 
+> Github Website: https://github.com/Nate-Fish/Bruin-Swipes
+
+> Project Website: https://bruinswipes.glitch.me
+
 ### Authors:
 Nate Fish, Ophir Siman-Tov, Sumeet Chhina, Mihir Srivastava, Pirjot Atwal
 
@@ -18,14 +22,15 @@ FYI: You will need to have a valid UCLA email to be able to sign up for an accou
 
 ---
 ### Installing
-Simply run the following commands while located in the root folder of the project to run the server on your machine. Visit the corresponding address that is printed in your terminal to view the website.
+Simply run the following commands while located in the root folder of the project to run the server on your machine. Visit the corresponding address that is printed in your terminal to view the website. The project requires that you have valid credentials for some of its modules, these are included for use for the development version's use.
 
 ```
 npm install
 node index.js
 ```
 
-Make sure to rename the downloaded .env-git file to .env and insert all necessary secrets into the file.
+Make sure to rename the downloaded .env-git file to .env and insert all necessary secrets into the file. Rename credentials-git.json to credentials.json and insert your credentials into the file.
+
 ###  IMPORTANT
 ### <i><u> MongoDB Setup </u></i>
 Make sure that you set up a database at MongoDB, initialize a user and a password, and insert the corresponding connection uri into the mongodb library file. Finally, make sure that the database allows access
@@ -68,143 +73,3 @@ For any process that involves communication between the server and client do the
 4. Test your request on the frontend (perhaps in a React Object).
 
 <br />
-
-## Schema
-
-### Accounts Schema
-```
-{
-  _id: ObjectId
-  
-  time: double
-  
-  first: string
-  
-  last: string
-
-  email: double
-
-  certified: boolean
-
-  hash: string
-
-  salt: string
-}
-```
-<br />
-
-### Profile Schema
-
-```
-{
-  email: string
-  
-  _id: ObjectId
-  
-  user_id: string
-
-  time: double
-
-  description: string
-
-  img: null
-}
-```
-<br />
-
-### Notifications
-```
-{
-  _id: ObjectId
-  
-  info: string
-
-  other_params: null
-
-  user_id: ObjectId
-
-  read: false
-}
-```
-<br />
-
-### Sessions
-```
-{
-  _id: ObjectId
-  
-  user_id: string
-
-  hash: string
-
-  salt: string
-
-  issu_time: double
-}
-```
-<br />
-
-### Buying
-```
-{
-  _id: ObjectId
-  
-  user_id: Int32
-
-  time: Object
-
-  place: string
-
-  price: double
-
-  time_posted: Timestamp
-
-  resloved: boolean
-
-  firstname: string
-
-  lastname: string
-}
-```
-<br />
-
-### Selling
-```
-{
-  _id: ObjectId
-  
-  user_id: Int32
-
-  time: Object
-
-  place: string
-
-  price: double
-
-  time_posted: Timestamp
-
-  resloved: boolean
-
-  firstname: string
-
-  lastname: string
-}
-```
-<br />
-
-### Messages
-```
-{
-  _id: ObjectId
-  
-  sender_id: ObjectId
-
-  recipient_id: ObjectId
-
-  time_sent: Timestamp
-
-  contents: string
-
-  listing_id: ObjectId
-}
-```
