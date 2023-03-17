@@ -11,6 +11,7 @@ body {
 }
 
 .search-bar {
+<<<<<<< HEAD
     display: flex;
     justify-content: center;
     align-items: center;
@@ -117,6 +118,121 @@ body {
   .conversation.active .message {
     font-weight: bold;
   }
+=======
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 66%;
+  margin: 0 auto;
+}
+
+.textbox {
+  width: 75%;
+  height: 5vh;
+  font-size: 16px;
+  padding: 10px;
+  border: none;
+  outline: none;
+  position: relative;
+  border-radius: 20px 20px 20px 20px;
+  margin: auto;
+}
+
+.message-input-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: row nowrap;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  width: 80%;
+}
+
+.messages-button {
+  width: 20%;
+  height: 40px;
+  font-size: 16px;
+  border-radius: 20px 20px 20px 20px;
+  color: #fff;
+  background-color: #2774AE;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+}
+
+.messages-sidebar {
+  float: left;
+  background-color: #ebebeb;
+  width: 20%;
+  height: 91.5vh;
+  position: relative;
+  top: 0;
+  left: 0;
+  overflow-y: scroll;
+}
+
+.conversation-details {
+  line-break: anywhere;
+}
+
+.conversation {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #d0d0d0;
+  cursor: pointer;
+}
+
+.conversation:hover {
+  background-color: #e0e0e07b;
+}
+
+.conversation:last-child {
+  border-bottom: none;
+}
+
+.conversation .avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.conversation .details {
+  display: flex;
+  flex-direction: column;
+}
+
+.conversation .details .name {
+  font-weight: bold;
+}
+
+.conversation .details .message {
+  font-size: 14px;
+  color: #666;
+}
+
+.conversation .details .time {
+  font-size: 12px;
+  color: #999;
+  margin-top: 5px;
+}
+
+.conversation.active {
+  background-color: #e0e0e0;
+}
+
+.conversation.active .message {
+  font-weight: bold;
+}
+
+>>>>>>> 58a05bb (Messages Error Fixing)
 .chat {
   overflow-y: scroll;
   height: 81vh;

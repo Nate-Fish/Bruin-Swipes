@@ -5,7 +5,13 @@ function MessageForm(props) {
     setMessage(event.target.value);
   };
   const handleClick = (event) => {
-    if (message != '') {
+    // check if message has text that has no spaces for more than 75 characters, is empty, or only contains whitespace
+    const hasLongString = /[^\s]{100}/.test(message);
+    if(message.replace(/\s/g, '').length == 0) {
+      setMessage('');
+      return;
+    }
+    if (message != '' && !hasLongString) {
         handleSend(message);
         setMessage('');
     }
