@@ -1,5 +1,7 @@
 'use strict';
 
+let recordsPerPage = 20;
+
 function SellButton({ buy, callback, update_query }){
     function handleClickBuy() {
         if(buy === undefined || !buy){
@@ -26,11 +28,11 @@ function BuyButton({ buy, callback, update_query }){
     return <button onClick={handleClickSell} className={buy === undefined || buy ? "bruin-button" : "bruin-button-selected"}>View Buy Listings</button>
 }
 
-function FilterButton({ callback }){
+function FilterButton({ callback, filtersShown }){
     function handleClickFilter() {
         callback()
     }
-    return <button onClick={handleClickFilter} className="bruin-button">Filters</button>
+    return <button onClick={handleClickFilter} className={filtersShown === undefined || !filtersShown ? "bruin-button" : "bruin-button-selected"}>Filters</button>
 }
 
 function CreateListingButton({ callback }){
@@ -44,7 +46,7 @@ function CreateListingButton({ callback }){
 function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLowerPrice, upperPrice, setUpperPrice, startTimeFilter, setStartTimeFilter, endTimeFilter, setEndTimeFilter, update_query }){   
 
     return (<>
-    <hr></hr>
+    <hr id="line"></hr>
     <div className="filter_class">
         <PriceComponent lowerPrice={lowerPrice} upperPrice={upperPrice} setLowerPrice={setLowerPrice} setUpperPrice={setUpperPrice} update_query={update_query}/>
         <FilterTimeComponent startTimeFilter={startTimeFilter} setStartTimeFilter={setStartTimeFilter} endTimeFilter={endTimeFilter} setEndTimeFilter={setEndTimeFilter} update_query={update_query}/>
@@ -52,7 +54,7 @@ function Filters({ filteredLocations, setFilteredLocations, lowerPrice, setLower
     <div className="filter_class">
         <LocationComponent filteredLocations={filteredLocations} setFilteredLocations={setFilteredLocations} update_query={update_query}/>
     </div>
-    <hr></hr>
+    <hr id="line"></hr>
     </>);
 }
 
@@ -209,6 +211,17 @@ function PriceComponent({ upperPrice, lowerPrice, setUpperPrice, setLowerPrice, 
     </table>
 }
 
+function addZero(n){
+    return n <= 9 ? "0" + n : n
+}
+
+function todaysDate(){
+    let raw = new Date();
+    let s = raw.getFullYear() + "-" + addZero(raw.getMonth() + 1) + "-" + addZero(raw.getDate()) + "T" + addZero(raw.getHours()) + ":" + addZero(raw.getMinutes());
+    console.log(s);
+    return s;
+}
+
 // Component that gets a datetime from user
 function TimeBar({ callback, content, time }){
     const [date, setDate] = React.useState(time);
@@ -217,7 +230,7 @@ function TimeBar({ callback, content, time }){
         <form>
             <label>
                 {content}
-                <input type="datetime-local" defaultValue={time} onChange={(e) => {
+                <input type="datetime-local" defaultValue={date} onChange={(e) => {
                     setDate(e.target.value)
                     callback(e.target.value)
                 }}/>
@@ -264,6 +277,7 @@ function UpperLimitBar({ callback, upperPrice }){
     );
 }
 
+// Takes database date and pretifies it
 function unpack_date(date){
     let year = Number(date.slice(0, 4));
     let month = Number(date.slice(5, 7));
@@ -330,8 +344,8 @@ function MessageButton(vals){
 
 
 function map_data(all_data, index){
-    let lowerBound = index*50;
-    let upperBound = all_data.length >= 50*(index+1) ? 50*(index+1) : all_data.length;
+    let lowerBound = index*recordsPerPage;
+    let upperBound = all_data.length >= recordsPerPage*(index+1) ? recordsPerPage*(index+1) : all_data.length;
     let all_data_copy = all_data.slice(lowerBound, upperBound);
     return(
         all_data_copy.map((vals, i) => {
@@ -352,7 +366,7 @@ function map_data(all_data, index){
                 <td>
                     {vals["selling"] ? "Selling" : "Buying"}
                 </td>
-                <td>
+                <td className="interested-button-td">
                     {MessageButton(vals)}
                 </td>
             </tr>
@@ -404,13 +418,13 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
                         <th onClick={() => handleClick("price")}>
                             {sortKey === "price" ? (!asc ? "Price\u25B4" : "Price\u25BE") : "Price"}
                         </th>
-                        <th>
+                        <th >
                             Name
                         </th>
-                        <th className="grid-background-right-th">
+                        <th  className="grid-background-right-th">
                             Buy/Sell
                         </th>
-                        <th>
+                        <th >
                         </th>
                     </tr>
                 </thead>
@@ -418,17 +432,17 @@ function Grid({ sortKey, setSortKey, asc, setAsc, all_data, update_query, index,
                     {map_data(all_data, index)}
                 </tbody>
             </table>
-            <table className="grid_class">
+            <table className="grid_class" id="bottom-table">
                 <tbody>
-                    <tr>
+                    <tr id="bottom-one">
                         <td className="bottom-row">
                             <button className="sm-bruin-button" onClick={() => {
                                 if (index > 0) setIndex(index - 1);
                                 }}>Previous
                             </button>
-                            <p>{(all_data.length ? (index*50 + 1) : 0) + " - " + ((index + 1)*50 < all_data.length ? (index + 1)*50 : all_data.length) + "/" + all_data.length}</p>
+                            <p>{(all_data.length ? (index*recordsPerPage + 1) : 0) + " - " + ((index + 1)*recordsPerPage < all_data.length ? (index + 1)*recordsPerPage : all_data.length) + "/" + all_data.length}</p>
                             <button className="sm-bruin-button" onClick={() => {
-                                if ((index + 1)*50 < all_data.length) setIndex(index + 1);
+                                if ((index + 1)*recordsPerPage < all_data.length) setIndex(index + 1);
                                 }}>Next
                             </button>
                         </td>
@@ -522,6 +536,7 @@ function ListingLocationComponent({ locationListed, setLocationListed, locationE
 
 // Component for when your making a listing and choosing the price
 function ListingPriceComponent({isBuy, setIsBuy, priceListed, setPriceListed, priceInput, setPriceInput, priceError, setPriceError}){
+
     return (
         <table className="listing-price">
             <thead>
@@ -545,8 +560,10 @@ function ListingPriceComponent({isBuy, setIsBuy, priceListed, setPriceListed, pr
                         </form>
                     </td>
                     <td >
-                        <button className={isBuy ? "selected-buy" : "not-selected-buy"} onClick={() => setIsBuy(!isBuy)}>Buy</button>
-                        <button className={!isBuy ? "selected-buy" : "not-selected-buy"} onClick={() => setIsBuy(!isBuy)}>Sell</button>
+                        <input checked={isBuy} type="checkbox" onChange={() => setIsBuy(true)}></input>
+                        <label onClick={() => setIsBuy(true)}>Buy</label>
+                        <input checked={!isBuy} type="checkbox" onChange={() => setIsBuy(false)}></input>
+                        <label onClick={() => setIsBuy(false)}>Sell</label>
                     </td>
                     <td>
                         <p>{priceError}</p>
@@ -617,7 +634,7 @@ function ListingConfirmComponent({ locationListed, isBuy, priceListed, timeListe
 }
 
 function Popup({ stage, setStage, locationListed, setLocationListed, locationError, setLocationError, isBuy, setIsBuy, priceListed, setPriceListed, priceInput, setPriceInput,
-    priceError, setPriceError, timeListed, setTimeListed, timeInput, setTimeInput, timeError, setTimeError, showPopup, setShowPopup, make_listing }){
+    priceError, setPriceError, timeListed, setTimeListed, timeInput, setTimeInput, timeError, setTimeError, showPopup, setShowPopup, make_listing, update_query }){
     let stages = [
         <ListingLocationComponent locationListed={locationListed} setLocationListed={setLocationListed}
         locationError={locationError} setLocationError={setLocationError}/>,
@@ -662,8 +679,12 @@ function Popup({ stage, setStage, locationListed, setLocationListed, locationErr
                 setStage(stage+1);
             }
         }else{
-            make_listing();
             handleClose();
+            (async () => {
+                await make_listing();
+                update_query({});
+            })();
+            
         }   
         
     }
@@ -713,9 +734,9 @@ function main(){
     //keep state of filter values
     const [filteredLocations, setFilteredLocations] = React.useState([]);
     const [lowerPrice, setLowerPrice] = React.useState(0);
-    const [upperPrice, setUpperPrice] = React.useState(20);
+    const [upperPrice, setUpperPrice] = React.useState(100);
     const [showBuys, setShowBuys] = React.useState(undefined)
-    const [startTimeFilter, setStartTimeFilter] = React.useState(undefined)
+    const [startTimeFilter, setStartTimeFilter] = React.useState(todaysDate())
     const [endTimeFilter, setEndTimeFilter] = React.useState(undefined)
     const [sortKey, setSortKey] = React.useState(undefined);
     const [asc, setAsc] = React.useState(undefined);
@@ -819,7 +840,7 @@ function main(){
             resolved: false,
             selling: !isBuy
         };
-        makeRequest('/post-listing', body);
+        await makeRequest('/post-listing', body);
     }
     
     return <>
@@ -827,7 +848,7 @@ function main(){
         <div className="main_button_wrapper">
                 <BuyButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
                 <SellButton buy={showBuys} callback={setShowBuys} update_query={update_query}/>
-                <FilterButton callback={() => setShowFilter(!showFilter)}/>
+                <FilterButton callback={() => setShowFilter(!showFilter)} filtersShown={showFilter}/>
                 <CreateListingButton callback={() => setShowPopup(!showPopup)}/>
         </div>
         <div>
@@ -861,7 +882,8 @@ function main(){
             timeInput={timeInput} setTimeInput={setTimeInput}
             timeError={timeError} setTimeError={setTimeError}
             showPopup={showPopup} setShowPopup={setShowPopup}
-            make_listing={make_listing}/> : <></>}
+            make_listing={make_listing}
+            update_query={update_query}/> : <></>}
         </div>
     </>
 }
